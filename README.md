@@ -4,8 +4,10 @@
 - start Apache
 - start MySql
 2. Tạo DB
+- Mở tab SQL trên dashboard
 - Bước 0 trong script.sql
 - Mở DB webproject trong dashboard
+- Mở lại tab SQL
 3. Tạo các bảng
 - Bước 1 trong script.sql
 - Chạy từng đoạn lệnh để tránh errol
