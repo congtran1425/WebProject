@@ -126,7 +126,7 @@ ALTER TABLE `user`
   ADD CONSTRAINT `chk_user_username_not_empty` CHECK (CHAR_LENGTH(TRIM(`username`)) > 0),
   ADD CONSTRAINT `chk_user_email_not_empty` CHECK (CHAR_LENGTH(TRIM(`email`)) > 0);
 
-ALTER TABLE `category`
+ALTER TABLE `category` -- đang lỗi
   ADD CONSTRAINT `chk_category_name_not_empty` CHECK (CHAR_LENGTH(TRIM(`category_name`)) > 0),
   ADD CONSTRAINT `chk_category_not_self_parent` CHECK (`parent_id` IS NULL OR `parent_id` <> `category_id`);
 

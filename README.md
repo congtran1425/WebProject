@@ -4,6 +4,7 @@
 - start Apache
 - start MySql
 2. Tạo DB
+- Mở phpmyadmin
 - Mở tab SQL trên dashboard
 - Bước 0 trong script.sql
 - Mở DB webproject trong dashboard
