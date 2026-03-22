@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    0) TẠO DATABASE
 ========================================================= */
 CREATE DATABASE IF NOT EXISTS `webproject`
@@ -26,8 +26,7 @@ CREATE TABLE `user` (
 CREATE TABLE `category` (
   `category_id` INT UNSIGNED NOT NULL,
   `category_name` VARCHAR(100) NOT NULL,
-  `description` VARCHAR(255) NULL,
-  `parent_id` INT UNSIGNED NULL
+  `description` VARCHAR(255) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `article` (
@@ -67,7 +66,6 @@ ALTER TABLE `user`
 ALTER TABLE `category`
   ADD PRIMARY KEY (`category_id`),
   ADD UNIQUE KEY `uq_category_name` (`category_name`),
-  ADD KEY `idx_category_parent_id` (`parent_id`),
   MODIFY `category_id` INT UNSIGNED NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `article`
@@ -89,12 +87,6 @@ ALTER TABLE `comment`
 /* =========================================================
    3) THÊM KHÓA NGOẠI (FOREIGN KEY + HÀNH VI XÓA)
 ========================================================= */
-
-ALTER TABLE `category`
-  ADD CONSTRAINT `fk_category_parent`
-    FOREIGN KEY (`parent_id`) REFERENCES `category`(`category_id`)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE;
 
 ALTER TABLE `article`
   ADD CONSTRAINT `fk_article_user`
@@ -126,9 +118,8 @@ ALTER TABLE `user`
   ADD CONSTRAINT `chk_user_username_not_empty` CHECK (CHAR_LENGTH(TRIM(`username`)) > 0),
   ADD CONSTRAINT `chk_user_email_not_empty` CHECK (CHAR_LENGTH(TRIM(`email`)) > 0);
 
-ALTER TABLE `category` -- đang lỗi
-  ADD CONSTRAINT `chk_category_name_not_empty` CHECK (CHAR_LENGTH(TRIM(`category_name`)) > 0),
-  ADD CONSTRAINT `chk_category_not_self_parent` CHECK (`parent_id` IS NULL OR `parent_id` <> `category_id`);
+ALTER TABLE `category`
+  ADD CONSTRAINT `chk_category_name_not_empty` CHECK (CHAR_LENGTH(TRIM(`category_name`)) > 0);
 
 ALTER TABLE `article`
   ADD CONSTRAINT `chk_article_title_not_empty` CHECK (CHAR_LENGTH(TRIM(`title`)) > 0),

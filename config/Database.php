@@ -2,7 +2,7 @@
 class Database {
 
     private $host = "localhost";
-    private $db_name = "news_db";
+    private $db_name = "webproject";
     private $username = "root";
     private $password = "";
 
@@ -20,6 +20,8 @@ class Database {
         if ($this->conn->connect_error) {
             die("Connection failed: " . $this->conn->connect_error);
         }
+
+        $this->conn->set_charset("utf8mb4");
 
         return $this->conn;
     }

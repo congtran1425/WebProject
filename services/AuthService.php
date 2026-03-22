@@ -11,7 +11,7 @@ class AuthService {
 
         $hash = password_hash($password,PASSWORD_BCRYPT);
 
-        $sql = "INSERT INTO users(username,email,password)
+        $sql = "INSERT INTO user(username,email,password)
                 VALUES(?,?,?)";
 
         $stmt = $this->conn->prepare($sql);
@@ -23,7 +23,7 @@ class AuthService {
 
     public function authenticate($email,$password) {
 
-        $sql = "SELECT * FROM users WHERE email=?";
+        $sql = "SELECT * FROM user WHERE email=?";
         $stmt = $this->conn->prepare($sql);
 
         $stmt->bind_param("s",$email);

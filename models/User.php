@@ -3,7 +3,7 @@ require_once "config/Database.php";
 abstract class User {
 
     protected $conn;
-    protected $table = "users";
+    protected $table = "user";
 
     protected $userId;
     protected $username;
@@ -20,7 +20,7 @@ abstract class User {
 
     public function login($email, $password) {
 
-        $sql = "SELECT * FROM users WHERE email = ?";
+        $sql = "SELECT * FROM user WHERE email = ?";
         $stmt = $this->conn->prepare($sql);
 
         $stmt->bind_param("s", $email);
@@ -41,7 +41,7 @@ abstract class User {
 
     public function updateProfile($userId, $username, $email) {
 
-        $sql = "UPDATE users SET username=?, email=? WHERE user_id=?";
+        $sql = "UPDATE user SET username=?, email=? WHERE user_id=?";
         $stmt = $this->conn->prepare($sql);
 
         $stmt->bind_param("ssi", $username, $email, $userId);
@@ -53,7 +53,7 @@ abstract class User {
 
         $hash = password_hash($newPassword, PASSWORD_BCRYPT);
 
-        $sql = "UPDATE users SET password=? WHERE user_id=?";
+        $sql = "UPDATE user SET password=? WHERE user_id=?";
         $stmt = $this->conn->prepare($sql);
 
         $stmt->bind_param("si", $hash, $userId);
