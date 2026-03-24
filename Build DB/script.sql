@@ -19,7 +19,15 @@ CREATE TABLE `user` (
   `password_hash` VARCHAR(255) NOT NULL,
   `role` ENUM('admin','editor','author','reader') NOT NULL DEFAULT 'reader',
   `status` ENUM('active','inactive','banned') NOT NULL DEFAULT 'active',
+  `full_name` VARCHAR(100) NULL,
+  `avatar` VARCHAR(255) NULL,
+  `bio` TEXT NULL,
+  `phone` VARCHAR(20) NULL,
+  `address` VARCHAR(255) NULL,
+  `gender` ENUM('male','female','other') NULL,
+  `birth_date` DATE NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `last_login` DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -118,7 +126,7 @@ ALTER TABLE `user`
   ADD CONSTRAINT `chk_user_username_not_empty` CHECK (CHAR_LENGTH(TRIM(`username`)) > 0),
   ADD CONSTRAINT `chk_user_email_not_empty` CHECK (CHAR_LENGTH(TRIM(`email`)) > 0);
 
-ALTER TABLE `category`
+ALTER TABLE `category` -- đang lỗi
   ADD CONSTRAINT `chk_category_name_not_empty` CHECK (CHAR_LENGTH(TRIM(`category_name`)) > 0);
 
 ALTER TABLE `article`
