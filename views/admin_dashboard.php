@@ -46,7 +46,20 @@ $flashMessage = $_GET["message"] ?? "";
                                     <div class="small text-muted"><?php echo !empty($user["created_at"]) ? date("d/m/Y", strtotime($user["created_at"])) : ""; ?></div>
                                 </td>
                                 <td><?php echo htmlspecialchars($user["email"], ENT_QUOTES, "UTF-8"); ?></td>
-                                <td><span class="badge text-bg-light"><?php echo htmlspecialchars($user["status"], ENT_QUOTES, "UTF-8"); ?></span></td>
+                                <td>
+                                    <form method="POST" class="d-flex gap-2">
+                                        <input type="hidden" name="action" value="update_user_status">
+                                        <input type="hidden" name="user_id" value="<?php echo (int)$user["user_id"]; ?>">
+                                        <select name="status" class="form-select form-select-sm">
+                                            <?php foreach (["active", "inactive", "banned"] as $status) { ?>
+                                                <option value="<?php echo $status; ?>" <?php echo $user["status"] === $status ? "selected" : ""; ?>>
+                                                    <?php echo ucfirst($status); ?>
+                                                </option>
+                                            <?php } ?>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-dark">Lưu</button>
+                                    </form>
+                                </td>
                                 <td>
                                     <form method="POST" class="d-flex gap-2">
                                         <input type="hidden" name="action" value="update_user_role">

@@ -29,6 +29,11 @@ class AdminController
                 $this->redirectWithMessage($success, "Đã cập nhật quyền người dùng.", "Không thể cập nhật quyền người dùng.");
                 break;
 
+            case "update_user_status":
+                $success = $this->admin->updateUserStatus((int)($_POST["user_id"] ?? 0), trim($_POST["status"] ?? ""));
+                $this->redirectWithMessage($success, "Đã cập nhật trạng thái người dùng.", "Không thể cập nhật trạng thái người dùng.");
+                break;
+
             case "create_category":
                 $success = $this->admin->createCategory(
                     trim($_POST["category_name"] ?? ""),

@@ -23,6 +23,19 @@ class Admin extends User {
         return $stmt->execute();
     }
 
+    public function updateUserStatus($userId, $status) {
+        $allowedStatuses = ['active', 'inactive', 'banned'];
+        if (!in_array($status, $allowedStatuses, true)) {
+            return false;
+        }
+
+        $sql = "UPDATE user SET status=? WHERE user_id=?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("si", $status, $userId);
+
+        return $stmt->execute();
+    }
+
     public function approveArticle($articleId) {
 
         $sql = "UPDATE article SET status='published' WHERE article_id=?";
@@ -34,13 +47,18 @@ class Admin extends User {
     }
 
     public function deleteArticle($articleId) {
+        $thumbnailPath = $this->getArticleThumbnailPath($articleId);
 
         $sql = "DELETE FROM article WHERE article_id=?";
         $stmt = $this->conn->prepare($sql);
 
         $stmt->bind_param("i", $articleId);
 
-        return $stmt->execute();
+        if (!$stmt->execute()) {
+            return false;
+        }
+
+        return $this->deleteThumbnailFiles($thumbnailPath);
     }
 
     public function manageCategory() {
@@ -119,6 +137,71 @@ class Admin extends User {
         $stmt->bind_param("si", $status, $commentId);
 
         return $stmt->execute();
+    }
+
+    private function getArticleThumbnailPath($articleId) {
+        $sql = "SELECT thumbnail FROM article WHERE article_id=?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $articleId);
+        $stmt->execute();
+
+        $article = $stmt->get_result()->fetch_assoc();
+
+        return $article["thumbnail"] ?? null;
+    }
+
+    private function deleteThumbnailFiles($thumbnailPath) {
+        if (empty($thumbnailPath)) {
+            return true;
+        }
+
+        $uploadDir = realpath(__DIR__ . "/../assets/uploads");
+        if ($uploadDir === false) {
+            return false;
+        }
+
+        $targets = $this->buildThumbnailTargets($thumbnailPath);
+
+        foreach ($targets as $target) {
+            $fullPath = $uploadDir . DIRECTORY_SEPARATOR . $target;
+
+            if (!is_file($fullPath)) {
+                continue;
+            }
+
+            if (!@unlink($fullPath)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function buildThumbnailTargets($thumbnailPath) {
+        $relativePath = str_replace("\\", "/", trim($thumbnailPath));
+        $prefix = "assets/uploads/";
+
+        if (strncmp($relativePath, $prefix, strlen($prefix)) !== 0) {
+            return [];
+        }
+
+        $filename = basename(substr($relativePath, strlen($prefix)));
+        if ($filename === "" || $filename === "." || $filename === "..") {
+            return [];
+        }
+
+        $targets = [$filename];
+        $pathInfo = pathinfo($filename);
+        $name = $pathInfo["filename"] ?? "";
+        $extension = isset($pathInfo["extension"]) ? "." . $pathInfo["extension"] : "";
+
+        if ($name !== "" && str_ends_with($name, "_small")) {
+            $targets[] = substr($name, 0, -6) . $extension;
+        } elseif ($name !== "") {
+            $targets[] = $name . "_small" . $extension;
+        }
+
+        return array_values(array_unique($targets));
     }
 }
 ?>
