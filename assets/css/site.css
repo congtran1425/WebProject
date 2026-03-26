@@ -296,3 +296,39 @@ main .list-group-item {
     overflow: hidden;
 }
 
+.admin-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+.admin-section {
+    overflow: hidden;
+}
+
+.admin-table th {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+}
+
+.admin-category-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-comment-text {
+    max-width: 420px;
+    white-space: normal;
+}
+
+@media (max-width: 992px) {
+    .admin-category-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+

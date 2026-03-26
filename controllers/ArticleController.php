@@ -34,7 +34,8 @@ class ArticleController
 
             $this->article->createArticle($title, $summary, $content, $category, $thumbnail_path);
 
-            header("Location: index.php");
+            header("Location: index.php?submission=pending");
+            exit;
         }
     }
 
@@ -54,7 +55,13 @@ class ArticleController
     }
     public function show($id)
     {
-        return $this->article->getArticleById($id);
+        $article = $this->article->getArticleById($id);
+        if ($article) {
+            $this->article->increaseView($id);
+            $article["view_count"] = (int)$article["view_count"] + 1;
+        }
+
+        return $article;
     }
 
     private function handleThumbnailUpload($file)

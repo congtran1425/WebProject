@@ -75,6 +75,7 @@ if (is_array($weather) && isset($weather["temperature"])) {
                     <a class="top-link top-link-brand" href="#"><span class="brand-e small">N</span> International</a> -->
                     <button class="icon-btn" type="button" aria-label="Tìm kiếm"><i class="bi bi-search"></i></button>
                     <button class="icon-btn" type="button" aria-label="Tài khoản"><i class="bi bi-person-circle"></i></button>
+                    <a class="btn btn-sm btn-outline-dark" href="admin.php">Admin</a>
                     <a class="btn btn-sm btn-danger" href="create_article.php">Tạo bài viết</a>
                 </div>
             </div>
