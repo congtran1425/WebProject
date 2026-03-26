@@ -10,8 +10,11 @@ class Comment {
 
     public function getCommentsByArticle($articleId) {
 
-        $sql = "SELECT * FROM comment
-                WHERE article_id=? AND status='visible'";
+        $sql = "SELECT c.*, u.username, u.full_name, u.avatar
+                FROM comment c
+                JOIN user u ON c.user_id = u.user_id
+                WHERE c.article_id=? AND c.status='visible'
+                ORDER BY c.created_at DESC";
 
         $stmt = $this->conn->prepare($sql);
 

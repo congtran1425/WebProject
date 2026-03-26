@@ -1,10 +1,4 @@
-<?php include "includes/header.php"; ?>
-
-<?php if (($_GET["submission"] ?? "") === "pending") { ?>
-    <div class="alert alert-warning border-0 shadow-sm">
-        Bài viết đã được gửi và đang chờ quản trị viên duyệt trước khi hiển thị công khai.
-    </div>
-<?php } ?>
+﻿<?php include "includes/header.php"; ?>
 
 <div class="row g-4">
     <div class="col-lg-8">

@@ -2,11 +2,13 @@
 
 require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/Article.php";
+require_once __DIR__ . "/../models/Comment.php";
 
 class ArticleController
 {
 
     private $article;
+    private $comment;
 
     public function __construct()
     {
@@ -15,6 +17,7 @@ class ArticleController
         $db = $database->connect();
 
         $this->article = new Article($db);
+        $this->comment = new Comment($db);
     }
 
     public function create()
@@ -34,8 +37,7 @@ class ArticleController
 
             $this->article->createArticle($title, $summary, $content, $category, $thumbnail_path);
 
-            header("Location: index.php?submission=pending");
-            exit;
+            header("Location: index.php");
         }
     }
 
@@ -55,13 +57,22 @@ class ArticleController
     }
     public function show($id)
     {
-        $article = $this->article->getArticleById($id);
-        if ($article) {
-            $this->article->increaseView($id);
-            $article["view_count"] = (int)$article["view_count"] + 1;
-        }
+        return $this->article->getArticleById($id);
+    }
 
-        return $article;
+    public function getComments($articleId)
+    {
+        return $this->comment->getCommentsByArticle($articleId);
+    }
+
+    public function relatedArticles($categoryId, $articleId, $limit = 4)
+    {
+        return $this->article->getRelatedArticles($categoryId, $articleId, $limit);
+    }
+
+    public function increaseView($articleId)
+    {
+        return $this->article->increaseView($articleId);
     }
 
     private function handleThumbnailUpload($file)

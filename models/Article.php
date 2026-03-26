@@ -48,7 +48,7 @@ class Article
     public function createArticle($title, $summary, $content, $categoryId, $thumbnailPath = null)
     {
         $sql = "INSERT INTO article (title, summary, content, thumbnail, category_id, user_id, status)
-            VALUES (?, ?, ?, ?, ?, 1, 'pending')";
+            VALUES (?, ?, ?, ?, ?, 1, 'published')";
 
         $stmt = $this->conn->prepare($sql);
 
@@ -118,5 +118,26 @@ class Article
         $stmt->execute();
 
         return $stmt->get_result()->fetch_assoc();
+    }
+
+    public function getRelatedArticles($categoryId, $articleId, $limit = 4)
+    {
+        $limit = (int)$limit;
+        if ($limit < 1) {
+            $limit = 4;
+        }
+
+        $sql = "SELECT a.*, c.category_name
+            FROM article a
+            JOIN category c ON a.category_id = c.category_id
+            WHERE a.category_id = ? AND a.article_id <> ?
+            ORDER BY a.created_at DESC
+            LIMIT " . $limit;
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $categoryId, $articleId);
+        $stmt->execute();
+
+        return $stmt->get_result();
     }
 }
