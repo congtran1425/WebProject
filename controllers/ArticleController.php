@@ -62,7 +62,32 @@ class ArticleController
 
     public function getComments($articleId)
     {
-        return $this->comment->getCommentsByArticle($articleId);
+        $result = $this->comment->getCommentsByArticle($articleId);
+        $comments = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $row["replies"] = [];
+            $comments[(int)$row["comment_id"]] = $row;
+        }
+
+        $tree = [];
+        foreach ($comments as $commentId => &$comment) {
+            $parentId = isset($comment["parent_comment_id"]) ? (int)$comment["parent_comment_id"] : 0;
+
+            if ($parentId > 0 && isset($comments[$parentId])) {
+                $comments[$parentId]["replies"][] = &$comment;
+                continue;
+            }
+
+            $tree[] = &$comment;
+        }
+        unset($comment);
+
+        return [
+            "items" => $tree,
+            "count" => count($comments),
+            "supports_replies" => $this->comment->supportsReplies(),
+        ];
     }
 
     public function relatedArticles($categoryId, $articleId, $limit = 4)
@@ -73,6 +98,47 @@ class ArticleController
     public function increaseView($articleId)
     {
         return $this->article->increaseView($articleId);
+    }
+
+    public function submitComment($articleId, array $data)
+    {
+        $content = trim($data["content"] ?? "");
+        $parentCommentId = isset($data["parent_comment_id"]) ? (int)$data["parent_comment_id"] : 0;
+
+        if ($content === "") {
+            return [
+                "success" => false,
+                "message" => "Vui lòng nhập nội dung bình luận.",
+            ];
+        }
+
+        if ($parentCommentId > 0 && !$this->comment->supportsReplies()) {
+            return [
+                "success" => false,
+                "message" => "Cơ sở dữ liệu chưa hỗ trợ trả lời bình luận.",
+            ];
+        }
+
+        $userId = $this->resolveCommentUserId();
+        if ($userId <= 0) {
+            return [
+                "success" => false,
+                "message" => "Không tìm thấy tài khoản để gửi bình luận.",
+            ];
+        }
+
+        $saved = $this->comment->createComment($articleId, $userId, $content, $parentCommentId);
+        if (!$saved) {
+            return [
+                "success" => false,
+                "message" => "Không thể lưu bình luận. Vui lòng thử lại.",
+            ];
+        }
+
+        return [
+            "success" => true,
+            "message" => $parentCommentId > 0 ? "Đã gửi trả lời bình luận." : "Đã gửi bình luận.",
+        ];
     }
 
     private function handleThumbnailUpload($file)
@@ -151,5 +217,14 @@ class ArticleController
         imagedestroy($dst_img);
 
         return true;
+    }
+
+    private function resolveCommentUserId()
+    {
+        if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION["user_id"])) {
+            return (int)$_SESSION["user_id"];
+        }
+
+        return $this->comment->getFallbackUserId();
     }
 }

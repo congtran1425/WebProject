@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    0) TẠO DATABASE
 ========================================================= */
 CREATE DATABASE IF NOT EXISTS `webproject`
@@ -56,6 +56,7 @@ CREATE TABLE `comment` (
   `content` TEXT NOT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `status` ENUM('visible','hidden','deleted') NOT NULL DEFAULT 'visible',
+  `parent_comment_id` INT UNSIGNED NULL,
   `user_id` INT UNSIGNED NOT NULL,
   `article_id` INT UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -86,6 +87,7 @@ ALTER TABLE `article`
 
 ALTER TABLE `comment`
   ADD PRIMARY KEY (`comment_id`),
+  ADD KEY `idx_comment_parent_comment_id` (`parent_comment_id`),
   ADD KEY `idx_comment_user_id` (`user_id`),
   ADD KEY `idx_comment_article_id` (`article_id`),
   ADD KEY `idx_comment_created_at` (`created_at`),
@@ -113,6 +115,10 @@ ALTER TABLE `comment`
     ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_comment_article`
     FOREIGN KEY (`article_id`) REFERENCES `article`(`article_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_comment_parent`
+    FOREIGN KEY (`parent_comment_id`) REFERENCES `comment`(`comment_id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
