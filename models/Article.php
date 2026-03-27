@@ -69,7 +69,6 @@ class Article
         $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            WHERE a.status='published'
             ORDER BY created_at DESC";
 
         return $this->conn->query($sql);
@@ -80,7 +79,7 @@ class Article
         $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            WHERE a.category_id=? AND a.status='published'
+            WHERE a.category_id=?
             ORDER BY created_at DESC";
 
         $stmt = $this->conn->prepare($sql);
@@ -100,7 +99,6 @@ class Article
         $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            WHERE a.status='published'
             ORDER BY view_count DESC, created_at DESC
             LIMIT " . $limit;
 
@@ -111,7 +109,7 @@ class Article
         $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            WHERE article_id=? AND a.status='published'";
+            WHERE article_id=?";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);

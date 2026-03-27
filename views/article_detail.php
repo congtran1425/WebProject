@@ -1,7 +1,80 @@
+<?php
+function comment_display_name(array $comment)
+{
+    if (!empty($comment["full_name"])) {
+        return $comment["full_name"];
+    }
+
+    return $comment["username"] ?? "Người dùng";
+}
+
+function comment_initial($name)
+{
+    if (function_exists("mb_substr")) {
+        return mb_strtoupper(mb_substr($name, 0, 1, "UTF-8"), "UTF-8");
+    }
+
+    return strtoupper(substr($name, 0, 1));
+}
+
+function render_comment_nodes(array $comments, $articleId, $supportsReplies, $level = 0)
+{
+    if (empty($comments)) {
+        return;
+    }
+    ?>
+    <div class="<?php echo $level === 0 ? "comment-thread" : "comment-replies"; ?>">
+        <?php foreach ($comments as $comment) { ?>
+            <?php $displayName = comment_display_name($comment); ?>
+            <article class="comment-card<?php echo $level > 0 ? " is-reply" : ""; ?>" id="comment-<?php echo (int)$comment["comment_id"]; ?>">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="comment-avatar">
+                        <?php echo htmlspecialchars(comment_initial($displayName), ENT_QUOTES, "UTF-8"); ?>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <span class="fw-semibold"><?php echo htmlspecialchars($displayName, ENT_QUOTES, "UTF-8"); ?></span>
+                            <?php if (!empty($comment["created_at"])) { ?>
+                                <span class="text-muted small"><?php echo date("d/m/Y H:i", strtotime($comment["created_at"])); ?></span>
+                            <?php } ?>
+                            <?php if ($level > 0) { ?>
+                                <span class="comment-level-badge">Phản hồi</span>
+                            <?php } ?>
+                        </div>
+
+                        <div class="comment-body">
+                            <?php echo nl2br(htmlspecialchars($comment["content"], ENT_QUOTES, "UTF-8")); ?>
+                        </div>
+
+                        <?php if ($supportsReplies) { ?>
+                            <details class="comment-reply-box mt-3">
+                                <summary>Trả lời</summary>
+                                <form method="post" action="article_detail.php?id=<?php echo (int)$articleId; ?>#comment-<?php echo (int)$comment["comment_id"]; ?>" class="reply-form mt-3">
+                                    <input type="hidden" name="comment_action" value="create">
+                                    <input type="hidden" name="parent_comment_id" value="<?php echo (int)$comment["comment_id"]; ?>">
+                                    <label class="form-label" for="reply-<?php echo (int)$comment["comment_id"]; ?>">Nội dung trả lời</label>
+                                    <textarea class="form-control" id="reply-<?php echo (int)$comment["comment_id"]; ?>" name="content" rows="3" required></textarea>
+                                    <div class="reply-form-actions">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Gửi trả lời</button>
+                                    </div>
+                                </form>
+                            </details>
+                        <?php } ?>
+
+                        <?php render_comment_nodes($comment["replies"], $articleId, $supportsReplies, $level + 1); ?>
+                    </div>
+                </div>
+            </article>
+        <?php } ?>
+    </div>
+    <?php
+}
+?>
+
 <?php include "includes/header.php"; ?>
 
-<div class="row g-4">
-    <div class="col-lg-8">
+<div class="article-layout">
+    <div class="article-layout-main">
         <article class="card border-0 shadow-sm article-detail-card">
             <div class="card-body p-4 p-lg-5">
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-3 article-meta-top">
@@ -35,45 +108,44 @@
         </article>
     </div>
 
-    <aside class="col-lg-4">
-        <div class="card border-0 shadow-sm sidebar-card mb-4">
+    <aside class="article-layout-side">
+        <section class="card border-0 shadow-sm sidebar-card comment-section" id="comments">
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h2 class="h6 mb-0 text-uppercase">Bình luận</h2>
-                    <span class="comment-count"><?php echo $comments->num_rows; ?></span>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                    <div>
+                        <h2 class="h6 mb-1 text-uppercase">Bình luận</h2>
+                    </div>
+                    <span class="comment-count"><?php echo (int)$comments["count"]; ?></span>
                 </div>
 
-                <?php if ($comments->num_rows > 0) { ?>
-                    <div class="comment-list">
-                        <?php while ($comment = $comments->fetch_assoc()) { ?>
-                            <?php $display_name = !empty($comment["full_name"]) ? $comment["full_name"] : $comment["username"]; ?>
-                            <div class="comment-item">
-                                <div class="d-flex align-items-start gap-3">
-                                    <div class="comment-avatar">
-                                        <?php echo strtoupper(substr($display_name, 0, 1)); ?>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                            <span class="fw-semibold"><?php echo htmlspecialchars($display_name, ENT_QUOTES, "UTF-8"); ?></span>
-                                            <?php if (!empty($comment["created_at"])) { ?>
-                                                <span class="text-muted small"><?php echo date("d/m/Y H:i", strtotime($comment["created_at"])); ?></span>
-                                            <?php } ?>
-                                        </div>
-                                        <p class="mb-0 text-muted"><?php echo nl2br(htmlspecialchars($comment["content"], ENT_QUOTES, "UTF-8")); ?></p>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php } ?>
+                <?php if (!empty($comment_feedback)) { ?>
+                    <div class="alert <?php echo !empty($comment_feedback["success"]) ? "alert-success" : "alert-danger"; ?> mb-4" role="alert">
+                        <?php echo htmlspecialchars($comment_feedback["message"], ENT_QUOTES, "UTF-8"); ?>
                     </div>
+                <?php } ?>
+
+                <form method="post" action="article_detail.php?id=<?php echo (int)$article["article_id"]; ?>#comments" class="comment-form">
+                    <input type="hidden" name="comment_action" value="create">
+                    <label class="form-label" for="comment-content">Nội dung bình luận</label>
+                    <textarea class="form-control" id="comment-content" name="content" rows="4" placeholder="Chia sẻ suy nghĩ của bạn..." required></textarea>
+                    <div class="comment-form-actions">
+                        <button type="submit" class="btn btn-sm btn-danger comment-submit-btn">Gửi bình luận</button>
+                    </div>
+                </form>
+
+                <div class="comment-divider"></div>
+
+                <?php if ($comments["count"] > 0) { ?>
+                    <?php render_comment_nodes($comments["items"], (int)$article["article_id"], $comments["supports_replies"]); ?>
                 <?php } else { ?>
                     <div class="empty-sidebar-state">
                         Chưa có bình luận nào cho bài viết này.
                     </div>
                 <?php } ?>
             </div>
-        </div>
+        </section>
 
-        <div class="card border-0 shadow-sm sidebar-card">
+        <div class="card border-0 shadow-sm sidebar-card mt-4">
             <div class="card-body">
                 <h2 class="h6 mb-3 text-uppercase">Cùng thể loại</h2>
 
