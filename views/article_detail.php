@@ -33,7 +33,9 @@ function render_comment_nodes(array $comments, $articleId, $supportsReplies, $le
                     </div>
                     <div class="flex-grow-1">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                            <span class="fw-semibold"><?php echo htmlspecialchars($displayName, ENT_QUOTES, "UTF-8"); ?></span>
+                            <a class="fw-semibold text-decoration-none author-link" href="profile.php?id=<?php echo (int)$comment["user_id"]; ?>">
+                                <?php echo htmlspecialchars($displayName, ENT_QUOTES, "UTF-8"); ?>
+                            </a>
                             <?php if (!empty($comment["created_at"])) { ?>
                                 <span class="text-muted small"><?php echo date("d/m/Y H:i", strtotime($comment["created_at"])); ?></span>
                             <?php } ?>
@@ -93,6 +95,24 @@ function render_comment_nodes(array $comments, $articleId, $supportsReplies, $le
                     <p class="article-detail-summary mb-4">
                         <?php echo htmlspecialchars($article["summary"], ENT_QUOTES, "UTF-8"); ?>
                     </p>
+                <?php } ?>
+
+                <?php if (!empty($article["user_id"])) { ?>
+                    <div class="article-author-box mb-4">
+                        <div class="article-author-avatar">
+                            <?php if (!empty($article["avatar"])) { ?>
+                                <img src="<?php echo htmlspecialchars($article["avatar"], ENT_QUOTES, "UTF-8"); ?>" alt="Tác giả">
+                            <?php } else { ?>
+                                <?php echo htmlspecialchars(comment_initial(comment_display_name($article)), ENT_QUOTES, "UTF-8"); ?>
+                            <?php } ?>
+                        </div>
+                        <div>
+                            <div class="small text-uppercase text-muted mb-1">Tác giả</div>
+                            <a class="article-author-name" href="profile.php?id=<?php echo (int)$article["user_id"]; ?>">
+                                <?php echo htmlspecialchars(comment_display_name($article), ENT_QUOTES, "UTF-8"); ?>
+                            </a>
+                        </div>
+                    </div>
                 <?php } ?>
 
                 <?php if (!empty($article["thumbnail"])) { ?>
