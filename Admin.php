@@ -1,36 +1,14 @@
 <?php
-require_once "User.php";
 
-class Admin extends User {
+require_once "controllers/AdminController.php";
 
-    public function manageUsers() {
-        $sql = "SELECT * FROM users";
-        return $this->conn->query($sql);
-    }
+$controller = new AdminController();
+$controller->handleRequest();
+$data = $controller->dashboardData();
 
-    public function approveArticle($articleId) {
+$adminUsers = $data["users"];
+$adminCategories = $data["categories"];
+$adminArticles = $data["articles"];
+$adminComments = $data["comments"];
 
-        $sql = "UPDATE article SET status='published' WHERE article_id=?";
-        $stmt = $this->conn->prepare($sql);
-
-        $stmt->bind_param("i", $articleId);
-
-        return $stmt->execute();
-    }
-
-    public function deleteArticle($articleId) {
-
-        $sql = "DELETE FROM article WHERE article_id=?";
-        $stmt = $this->conn->prepare($sql);
-
-        $stmt->bind_param("i", $articleId);
-
-        return $stmt->execute();
-    }
-
-    public function manageCategory() {
-        $sql = "SELECT * FROM category";
-        return $this->conn->query($sql);
-    }
-}
-?>
+include "views/admin_dashboard.php";
