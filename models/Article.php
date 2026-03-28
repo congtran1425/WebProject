@@ -66,10 +66,9 @@ class Article
     }
     public function getAllArticles()
     {
-        $sql = "SELECT a.*, c.category_name, u.username, u.full_name, u.avatar
+        $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            JOIN user u ON a.user_id = u.user_id
             ORDER BY created_at DESC";
 
         return $this->conn->query($sql);
@@ -77,10 +76,9 @@ class Article
 
     public function getArticlesByCategory($categoryId)
     {
-        $sql = "SELECT a.*, c.category_name, u.username, u.full_name, u.avatar
+        $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            JOIN user u ON a.user_id = u.user_id
             WHERE a.category_id=?
             ORDER BY created_at DESC";
 
@@ -98,10 +96,9 @@ class Article
             $limit = 5;
         }
 
-        $sql = "SELECT a.*, c.category_name, u.username, u.full_name, u.avatar
+        $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            JOIN user u ON a.user_id = u.user_id
             ORDER BY view_count DESC, created_at DESC
             LIMIT " . $limit;
 
@@ -109,10 +106,9 @@ class Article
     }
     public function getArticleById($id)
     {
-        $sql = "SELECT a.*, c.category_name, u.username, u.full_name, u.avatar
+        $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            JOIN user u ON a.user_id = u.user_id
             WHERE article_id=?";
 
         $stmt = $this->conn->prepare($sql);
@@ -129,10 +125,9 @@ class Article
             $limit = 4;
         }
 
-        $sql = "SELECT a.*, c.category_name, u.username, u.full_name, u.avatar
+        $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            JOIN user u ON a.user_id = u.user_id
             WHERE a.category_id = ? AND a.article_id <> ?
             ORDER BY a.created_at DESC
             LIMIT " . $limit;

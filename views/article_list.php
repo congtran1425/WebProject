@@ -34,14 +34,6 @@
                                     <?php echo htmlspecialchars($row["title"], ENT_QUOTES, "UTF-8"); ?>
                                 </a>
                             </h3>
-                            <?php if (!empty($row["user_id"])) { ?>
-                                <div class="small text-muted mb-2">
-                                    Tác giả:
-                                    <a class="author-link position-relative z-1" href="profile.php?id=<?php echo (int)$row["user_id"]; ?>">
-                                        <?php echo htmlspecialchars(!empty($row["full_name"]) ? $row["full_name"] : ($row["username"] ?? "Người dùng"), ENT_QUOTES, "UTF-8"); ?>
-                                    </a>
-                                </div>
-                            <?php } ?>
                             <p class="text-muted small mb-2 clamp-2">
                                 <?php echo htmlspecialchars($row["summary"], ENT_QUOTES, "UTF-8"); ?>
                             </p>
