@@ -201,7 +201,7 @@ class ProfileController
             ];
         }
 
-        $uploadDir = __DIR__ . "/../assets/uploads/avatars";
+        $uploadDir = __DIR__ . "/../assets/avatars";
         if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
             return [
                 "success" => false,
@@ -210,7 +210,7 @@ class ProfileController
         }
 
         $basename = uniqid("avatar_", true);
-        $relativePath = "assets/uploads/avatars/" . $basename . "." . $allowed[$mime];
+        $relativePath = "assets/avatars/" . $basename . "." . $allowed[$mime];
         $fullPath = __DIR__ . "/../" . $relativePath;
 
         if (!move_uploaded_file($file["tmp_name"], $fullPath)) {
@@ -251,12 +251,12 @@ class ProfileController
         }
 
         $normalizedPath = str_replace("\\", "/", $avatarPath);
-        $prefix = "assets/uploads/avatars/";
+        $prefix = "assets/avatars/";
         if (strncmp($normalizedPath, $prefix, strlen($prefix)) !== 0) {
             return;
         }
 
-        $fullPath = realpath(__DIR__ . "/../assets/uploads/avatars");
+        $fullPath = realpath(__DIR__ . "/../assets/avatars");
         if ($fullPath === false) {
             return;
         }
