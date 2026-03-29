@@ -1,9 +1,13 @@
-﻿<?php include "includes/header.php"; ?>
+<?php include __DIR__ . "/../includes/header.php"; ?>
 
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="d-flex align-items-center justify-content-between mb-2">
-            <h2 class="h6 mb-0 text-uppercase">Mới nhất</h2>
+            <div>
+                <h2 class="h6 mb-1 text-uppercase">Danh mục: <?php echo htmlspecialchars($categoryInfo["category_name"], ENT_QUOTES, "UTF-8"); ?></h2>
+                <div class="text-muted small">Các bài viết mới nhất trong danh mục này</div>
+            </div>
+            <a class="btn btn-sm btn-outline-danger" href="index.php">Trang chủ</a>
         </div>
 
         <div class="row g-2">
@@ -71,4 +75,4 @@
     </div>
 </div>
 
-<?php include "includes/footer.php"; ?>
+<?php include __DIR__ . "/../includes/footer.php"; ?>

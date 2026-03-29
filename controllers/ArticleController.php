@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/Article.php";
@@ -29,8 +29,8 @@ class ArticleController
         $role = $_SESSION["role"] ?? "";
         $userId = (int)($_SESSION["user_id"] ?? 0);
         if ($userId <= 0 || !in_array($role, ["author", "editor", "admin"], true)) {
-            http_response_code(403);
-            exit("Bạn không có quyền tạo bài viết.");
+            header("Location: index.php");
+            exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -53,11 +53,6 @@ class ArticleController
 
     public function index()
     {
-        if (isset($_GET["category_id"])) {
-            $category_id = (int)$_GET["category_id"];
-            return $this->article->getArticlesByCategory($category_id);
-        }
-
         return $this->article->getAllArticles();
     }
 
@@ -118,14 +113,14 @@ class ArticleController
         if ($content === "") {
             return [
                 "success" => false,
-                "message" => "Vui lòng nhập nội dung bình luận.",
+                "message" => "Vui lÃ²ng nháº­p ná»™i dung bÃ¬nh luáº­n.",
             ];
         }
 
         if ($parentCommentId > 0 && !$this->comment->supportsReplies()) {
             return [
                 "success" => false,
-                "message" => "Cơ sở dữ liệu chưa hỗ trợ trả lời bình luận.",
+                "message" => "CÆ¡ sá»Ÿ dá»¯ liá»‡u chÆ°a há»— trá»£ tráº£ lá»i bÃ¬nh luáº­n.",
             ];
         }
 
@@ -133,7 +128,7 @@ class ArticleController
         if ($userId <= 0) {
             return [
                 "success" => false,
-                "message" => "Không tìm thấy tài khoản để gửi bình luận.",
+                "message" => "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n Ä‘á»ƒ gá»­i bÃ¬nh luáº­n.",
             ];
         }
 
@@ -141,13 +136,13 @@ class ArticleController
         if (!$saved) {
             return [
                 "success" => false,
-                "message" => "Không thể lưu bình luận. Vui lòng thử lại.",
+                "message" => "KhÃ´ng thá»ƒ lÆ°u bÃ¬nh luáº­n. Vui lÃ²ng thá»­ láº¡i.",
             ];
         }
 
         return [
             "success" => true,
-            "message" => $parentCommentId > 0 ? "Đã gửi trả lời bình luận." : "Đã gửi bình luận.",
+            "message" => $parentCommentId > 0 ? "ÄÃ£ gá»­i tráº£ lá»i bÃ¬nh luáº­n." : "ÄÃ£ gá»­i bÃ¬nh luáº­n.",
         ];
     }
 
@@ -238,3 +233,4 @@ class ArticleController
         return 0;
     }
 }
+

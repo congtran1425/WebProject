@@ -27,7 +27,7 @@ if (!$article) {
 
 $controller->increaseView($id);
 $comments = $controller->getComments($id);
-$related_articles = $controller->relatedArticles((int)$article["category_id"], $id, 4);
+$related_articles = $controller->relatedArticles((int)$article["category_id"], $id, 3);
 $comment_feedback = $_SESSION["comment_feedback"] ?? null;
 unset($_SESSION["comment_feedback"]);
 

@@ -3,6 +3,22 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
+$basePath = $basePath ?? "";
+$basePath = $basePath === "" ? "" : rtrim($basePath, "/") . "/";
+function resolve_asset_path($path, $basePath) {
+    $path = trim((string)$path);
+    if ($path === "") {
+        return "";
+    }
+    if (preg_match("#^(https?:|data:)#i", $path)) {
+        return $path;
+    }
+    if (str_starts_with($path, "/")) {
+        return $path;
+    }
+    return $basePath . $path;
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["auth_action"] ?? "") === "login") {
     require_once __DIR__ . "/../controllers/AuthController.php";
     $authController = new AuthController();
@@ -71,13 +87,13 @@ $shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="assets/css/site.css" rel="stylesheet">
+    <link href="<?php echo $basePath; ?>assets/css/site.css" rel="stylesheet">
 </head>
 
 <body>
     <header class="site-header">
         <div class="topbar border-bottom">
-            <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3 py-2">
+            <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3 py-1">
                 <?php
                 $currentRole = $_SESSION["role"] ?? "";
                 $isLoggedIn = !empty($_SESSION["user_id"]);
@@ -85,7 +101,7 @@ $shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]
                 $isAdmin = $currentRole === "admin";
                 ?>
                 <div class="d-flex align-items-center gap-3">
-                    <a class="brand" href="index.php" aria-label="Trang chủ">
+                    <a class="brand" href="<?php echo $basePath; ?>index.php" aria-label="Trang chủ">
                         <span class="brand-vn">VN</span><span class="brand-e">N</span><span class="brand-rest">EWS</span>
                     </a>
                     <span class="brand-sub">Báo tiếng Việt nhiều người xem nhất</span>
@@ -99,7 +115,15 @@ $shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]
                     <span class="divider"><?php echo htmlspecialchars($today_text, ENT_QUOTES, "UTF-8"); ?></span>
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                    <button class="icon-btn" type="button" aria-label="Tìm kiếm"><i class="bi bi-search"></i></button>
+                    <div class="search-wrapper" data-search>
+                        <button class="icon-btn search-toggle" type="button" aria-label="Tìm kiếm" aria-expanded="false" aria-controls="header-search-form">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <form class="search-form" id="header-search-form" method="get" action="<?php echo $basePath; ?>search.php" role="search" aria-hidden="true">
+                            <input class="search-input" type="search" name="q" placeholder="Nhập từ khóa cần tìm..." autocomplete="off" />
+                            <button class="search-submit" type="submit">Tìm</button>
+                        </form>
+                    </div>
                     <?php if (!$isLoggedIn) { ?>
                         <a class="btn btn-sm btn-outline-dark" href="#loginModal" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</a>
                     <?php } else { ?>
@@ -114,25 +138,25 @@ $shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]
                         <div class="dropdown">
                             <button class="user-avatar-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Tài khoản">
                                 <?php if ($avatarPath !== "") { ?>
-                                    <img src="<?php echo htmlspecialchars($avatarPath, ENT_QUOTES, "UTF-8"); ?>" alt="Avatar">
+                                <img src="<?php echo htmlspecialchars(resolve_asset_path($avatarPath, $basePath), ENT_QUOTES, "UTF-8"); ?>" alt="Avatar">
                                 <?php } else { ?>
                                     <span class="avatar-initial"><?php echo htmlspecialchars($initial, ENT_QUOTES, "UTF-8"); ?></span>
                                 <?php } ?>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                 <li class="dropdown-header"><?php echo htmlspecialchars($displayName !== "" ? $displayName : "Tài khoản", ENT_QUOTES, "UTF-8"); ?></li>
-                                <li><a class="dropdown-item" href="profile.php">Thông tin cá nhân</a></li>
+                                <li><a class="dropdown-item" href="<?php echo $basePath; ?>profile.php">Thông tin cá nhân</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-                                <li><a class="dropdown-item text-danger" href="logout.php">Đăng xuất</a></li>
+                                <li><a class="dropdown-item text-danger" href="<?php echo $basePath; ?>logout.php">Đăng xuất</a></li>
                             </ul>
                         </div>
                         <?php if ($canCreateArticle) { ?>
-                            <a class="btn btn-sm btn-danger" href="create_article.php">Tạo bài viết</a>
+                            <a class="btn btn-sm btn-danger" href="<?php echo $basePath; ?>create_article.php">Tạo bài viết</a>
                         <?php } ?>
                         <?php if ($isAdmin) { ?>
-                            <a class="btn btn-sm btn-outline-dark" href="admin.php">Admin</a>
+                            <a class="btn btn-sm btn-outline-dark" href="<?php echo $basePath; ?>admin/index.php">Admin</a>
                         <?php } ?>
                     <?php } ?>
                 </div>
@@ -141,9 +165,9 @@ $shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]
         <div class="category-bar border-bottom">
             <div class="container">
                 <nav class="category-nav" aria-label="Danh mục">
-                    <a class="category-home" href="index.php" aria-label="Trang chủ"><i class="bi bi-house-door"></i></a>
+                    <a class="category-home" href="<?php echo $basePath; ?>index.php" aria-label="Trang chủ"><i class="bi bi-house-door"></i></a>
                     <?php foreach ($categories as $category) { ?>
-                        <a href="index.php?category_id=<?php echo (int)$category["category_id"]; ?>">
+                        <a href="<?php echo $basePath; ?>category.php?category_id=<?php echo (int)$category["category_id"]; ?>">
                             <?php echo htmlspecialchars($category["category_name"], ENT_QUOTES, "UTF-8"); ?>
                         </a>
                     <?php } ?>
@@ -260,6 +284,75 @@ $shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]
                 }
             }
         });
+    </script>
+    <script>
+        (function () {
+            var searchWrapper = document.querySelector("[data-search]");
+            if (!searchWrapper) {
+                return;
+            }
+
+            var toggleBtn = searchWrapper.querySelector(".search-toggle");
+            var form = searchWrapper.querySelector(".search-form");
+            var input = searchWrapper.querySelector(".search-input");
+            var isOpen = false;
+
+            var closeSearch = function () {
+                if (!isOpen) {
+                    return;
+                }
+                isOpen = false;
+                searchWrapper.classList.remove("is-open");
+                if (toggleBtn) {
+                    toggleBtn.setAttribute("aria-expanded", "false");
+                }
+                if (form) {
+                    form.setAttribute("aria-hidden", "true");
+                }
+            };
+
+            var openSearch = function () {
+                if (isOpen) {
+                    return;
+                }
+                isOpen = true;
+                searchWrapper.classList.add("is-open");
+                if (toggleBtn) {
+                    toggleBtn.setAttribute("aria-expanded", "true");
+                }
+                if (form) {
+                    form.setAttribute("aria-hidden", "false");
+                }
+                if (input) {
+                    input.focus();
+                }
+            };
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                    openSearch();
+                });
+            }
+
+            if (form) {
+                form.addEventListener("click", function (event) {
+                    event.stopPropagation();
+                });
+            }
+
+            document.addEventListener("click", function (event) {
+                if (!searchWrapper.contains(event.target)) {
+                    closeSearch();
+                }
+            });
+
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") {
+                    closeSearch();
+                }
+            });
+        })();
     </script>
 
     <main class="container mt-4">

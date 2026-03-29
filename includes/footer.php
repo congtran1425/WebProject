@@ -1,5 +1,10 @@
 </main>
 
+<?php
+$basePath = $basePath ?? "";
+$basePath = $basePath === "" ? "" : rtrim($basePath, "/") . "/";
+?>
+
 <footer class="site-footer mt-5 border-top">
     <div class="footer-menu py-4">
         <div class="container">
@@ -36,7 +41,7 @@
                         <ul class="list-unstyled footer-list">
                             <?php foreach ($chunk as $category) { ?>
                                 <li>
-                                    <a href="index.php?category_id=<?php echo (int)$category["category_id"]; ?>">
+                                    <a href="<?php echo $basePath; ?>category.php?category_id=<?php echo (int)$category["category_id"]; ?>">
                                         <?php echo htmlspecialchars($category["category_name"], ENT_QUOTES, "UTF-8"); ?>
                                     </a>
                                 </li>
