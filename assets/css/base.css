@@ -1,0 +1,165 @@
+:root {
+    --brand-red: #c7262e;
+    --brand-red-dark: #a61e25;
+    --accent-rose: #ea868f;
+    --text-dark: #1f2328;
+    --text-muted: #6c757d;
+    --text-muted-2: #495057;
+    --border-light: #e9ecef;
+    --border-rose: #f0d7d9;
+    --border-rose-2: #f0d4d6;
+    --border-rose-3: #f4c9cc;
+    --bg-soft: #f7f8fa;
+    --bg-soft-2: #f1f3f5;
+    --bg-rose-50: #fdf1f1;
+    --bg-rose-100: #fff9f9;
+    --bg-rose-200: #fff4f5;
+    --bg-rose-300: #fff6f6;
+    --bg-soft-3: #f8f9fa;
+    --gray-1: #5b5f63;
+    --text-dark-2: #343a40;
+    --border-rose-4: #f1d7d9;
+    --border-rose-5: #f0b7bc;
+}
+
+body {
+    font-family: "Be Vietnam Pro", "Segoe UI", Tahoma, sans-serif;
+    color: var(--text-dark);
+    background: #ffffff;
+    margin: 0;
+}
+
+.avatar-initial,
+.comment-avatar,
+.article-author-avatar,
+.profile-avatar-lg {
+    background: linear-gradient(135deg, var(--brand-red), var(--accent-rose));
+    color: #ffffff;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-avatar-btn img,
+.article-author-avatar img,
+.profile-avatar-lg img,
+.mini-thumb img,
+.related-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+main .card {
+    border-radius: 12px;
+}
+
+main .list-group-item {
+    border: none;
+}
+
+.clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.pagination .page-link {
+    color: var(--brand-red);
+    border-color: var(--border-rose);
+}
+
+.pagination .page-link:hover {
+    color: var(--brand-red-dark);
+    background: var(--bg-rose-200);
+    border-color: var(--border-rose-5);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--brand-red);
+    border-color: var(--brand-red);
+    color: #ffffff;
+}
+
+.nav-tabs .nav-link {
+    color: var(--brand-red);
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--brand-red-dark);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--text-dark);
+    border-color: var(--border-rose) var(--border-rose) #ffffff;
+}
+
+.admin-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-card-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(33, 37, 41, 0.08);
+}
+
+.admin-card-action {
+    color: var(--brand-red);
+    font-weight: 600;
+}
+
+.site-footer {
+    background: #ffffff;
+}
+
+.footer-menu {
+    background: #ffffff;
+}
+
+.footer-list a {
+    color: var(--text-dark);
+    text-decoration: none;
+    display: inline-block;
+    padding: 4px 0;
+}
+
+.footer-list a:hover {
+    color: var(--brand-red);
+}
+
+.app-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-dark);
+    font-size: 0.85rem;
+}
+
+.footer-contact a {
+    color: var(--text-dark);
+    text-decoration: none;
+}
+
+.footer-legal a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.footer-legal a:hover {
+    color: var(--brand-red);
+}
+
+.footer-legal .brand.mark {
+    font-weight: 700;
+    color: var(--gray-1);
+}

@@ -17,8 +17,39 @@ function profile_initial($name)
     return strtoupper(substr($name, 0, 1));
 }
 
+function profile_avatar_src($path)
+{
+    $normalized = trim((string)$path);
+    if ($normalized === "") {
+        return "";
+    }
+
+    $normalized = str_replace("\\", "/", $normalized);
+    if (preg_match("#^(https?:|data:)#i", $normalized)) {
+        return $normalized;
+    }
+
+    $pos = strpos($normalized, "assets/avatars/");
+    if ($pos !== false) {
+        $normalized = substr($normalized, $pos);
+    }
+
+    $pos = strpos($normalized, "avatars/");
+    if ($pos !== false) {
+        $normalized = "assets/avatars/" . basename($normalized);
+    }
+
+    $normalized = ltrim($normalized, "/");
+    $base = rtrim(dirname($_SERVER["SCRIPT_NAME"] ?? ""), "/");
+    if ($base === "" || $base === ".") {
+        return "/" . $normalized;
+    }
+
+    return $base . "/" . $normalized;
+}
+
 $displayName = profile_display_name($profile);
-$avatarPath = trim((string)($profile["avatar"] ?? ""));
+$avatarPath = profile_avatar_src($profile["avatar"] ?? "");
 $genderMap = [
     "male" => "Nam",
     "female" => "Nữ",
@@ -124,12 +155,12 @@ $genderMap = [
 
                             <div class="col-md-6">
                                 <label class="form-label" for="profile-username">Tên đăng nhập</label>
-                                <input class="form-control" id="profile-username" type="text" value="<?php echo htmlspecialchars($profile["username"] ?? "", ENT_QUOTES, "UTF-8"); ?>" readonly>
+                                <input class="form-control" id="profile-username" type="text" name="username" value="<?php echo htmlspecialchars($profile["username"] ?? "", ENT_QUOTES, "UTF-8"); ?>" readonly>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label" for="profile-email">Email</label>
-                                <input class="form-control" id="profile-email" type="email" value="<?php echo htmlspecialchars($profile["email"] ?? "", ENT_QUOTES, "UTF-8"); ?>" readonly>
+                                <input class="form-control" id="profile-email" type="email" name="email" value="<?php echo htmlspecialchars($profile["email"] ?? "", ENT_QUOTES, "UTF-8"); ?>" readonly>
                             </div>
 
                             <div class="col-md-6">

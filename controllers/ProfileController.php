@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/Profile.php";
@@ -75,6 +75,11 @@ class ProfileController
         }
 
         $saved = $this->profile->updateProfile($userId, $data);
+        if ($saved) {
+            $_SESSION["avatar"] = $data["avatar"] ?? null;
+            $_SESSION["full_name"] = $data["full_name"] ?? ($_SESSION["full_name"] ?? null);
+            $_SESSION["username"] = $data["username"] ?? ($_SESSION["username"] ?? null);
+        }
         $this->setFlash($saved, $saved ? "Đã cập nhật trang cá nhân." : "Không thể cập nhật trang cá nhân.");
 
         $this->redirectToProfile($requestedUserId);
@@ -278,6 +283,9 @@ class ProfileController
             "success" => (bool)$success,
             "message" => $message,
         ];
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
     }
 
     private function consumeFlash()

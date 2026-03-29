@@ -139,6 +139,32 @@ class Admin extends User {
         return $stmt->execute();
     }
 
+    public function countUsers() {
+        return $this->countTable("user");
+    }
+
+    public function countCategories() {
+        return $this->countTable("category");
+    }
+
+    public function countArticles() {
+        return $this->countTable("article");
+    }
+
+    public function countComments() {
+        return $this->countTable("comment");
+    }
+
+    private function countTable($table) {
+        $sql = "SELECT COUNT(*) AS total FROM " . $table;
+        $result = $this->conn->query($sql);
+        if (!$result) {
+            return 0;
+        }
+        $row = $result->fetch_assoc();
+        return (int)($row["total"] ?? 0);
+    }
+
     private function getArticleThumbnailPath($articleId) {
         $sql = "SELECT thumbnail FROM article WHERE article_id=?";
         $stmt = $this->conn->prepare($sql);
