@@ -51,7 +51,7 @@ function render_comment_nodes(array $comments, $articleId, $supportsReplies, $le
                         <?php if ($supportsReplies) { ?>
                             <details class="comment-reply-box mt-3">
                                 <summary>Trả lời</summary>
-                                <form method="post" action="article_detail.php?id=<?php echo (int)$articleId; ?>#comment-<?php echo (int)$comment["comment_id"]; ?>" class="reply-form mt-3">
+                                <form method="post" action="article_detail.php?id=<?php echo (int)$articleId; ?>#comment-<?php echo (int)$comment["comment_id"]; ?>" class="reply-form mt-3" data-comment-form="1" data-auth="<?php echo !empty($_SESSION["user_id"]) ? "1" : "0"; ?>">
                                     <input type="hidden" name="comment_action" value="create">
                                     <input type="hidden" name="parent_comment_id" value="<?php echo (int)$comment["comment_id"]; ?>">
                                     <label class="form-label" for="reply-<?php echo (int)$comment["comment_id"]; ?>">Nội dung trả lời</label>
@@ -144,7 +144,7 @@ function render_comment_nodes(array $comments, $articleId, $supportsReplies, $le
                     </div>
                 <?php } ?>
 
-                <form method="post" action="article_detail.php?id=<?php echo (int)$article["article_id"]; ?>#comments" class="comment-form">
+                <form method="post" action="article_detail.php?id=<?php echo (int)$article["article_id"]; ?>#comments" class="comment-form" data-comment-form="1" data-auth="<?php echo !empty($_SESSION["user_id"]) ? "1" : "0"; ?>">
                     <input type="hidden" name="comment_action" value="create">
                     <label class="form-label" for="comment-content">Nội dung bình luận</label>
                     <textarea class="form-control" id="comment-content" name="content" rows="4" placeholder="Chia sẻ suy nghĩ của bạn..." required></textarea>
@@ -198,5 +198,57 @@ function render_comment_nodes(array $comments, $articleId, $supportsReplies, $le
         </div>
     </aside>
 </div>
+
+<script>
+    (function () {
+        var forms = document.querySelectorAll("form[data-comment-form=\"1\"]");
+        if (!forms.length) {
+            return;
+        }
+
+        var textarea = document.getElementById("comment-content");
+        var articleId = <?php echo (int)$article["article_id"]; ?>;
+        var storageKey = "pending_comment_" + articleId;
+
+        if (textarea) {
+            var saved = localStorage.getItem(storageKey);
+            if (saved && textarea.value.trim() === "") {
+                textarea.value = saved;
+            }
+        }
+
+        forms.forEach(function (form) {
+            form.addEventListener("submit", function (event) {
+                var isAuthed = form.getAttribute("data-auth") === "1";
+                if (isAuthed) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                if (textarea && form.classList.contains("comment-form")) {
+                    localStorage.setItem(storageKey, textarea.value);
+                }
+
+                if (window.bootstrap) {
+                    var modalEl = document.getElementById("loginModal");
+                    if (modalEl) {
+                        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.show();
+                        return;
+                    }
+                }
+
+                window.location.href = "#loginModal";
+            });
+        });
+
+        var mainForm = document.querySelector(".comment-form");
+        var mainAuthed = mainForm ? (mainForm.getAttribute("data-auth") === "1") : false;
+        if (mainAuthed && textarea) {
+            localStorage.removeItem(storageKey);
+        }
+    })();
+</script>
 
 <?php include "includes/footer.php"; ?>

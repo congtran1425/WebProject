@@ -21,14 +21,6 @@
                                     <div class="thumb-placeholder">Chưa có ảnh</div>
                                 <?php } ?>
                             </div>
-                            <div class="d-flex align-items-center gap-2 text-muted small mb-1">
-                                <span class="badge bg-light text-dark border">
-                                    <?php echo htmlspecialchars($row["category_name"], ENT_QUOTES, "UTF-8"); ?>
-                                </span>
-                                <?php if (!empty($row["created_at"])) { ?>
-                                    <span><?php echo date("d/m/Y H:i", strtotime($row["created_at"])); ?></span>
-                                <?php } ?>
-                            </div>
                             <h3 class="h6 mb-1">
                                 <a class="text-decoration-none text-dark stretched-link" href="article_detail.php?id=<?php echo (int)$row["article_id"]; ?>">
                                     <?php echo htmlspecialchars($row["title"], ENT_QUOTES, "UTF-8"); ?>

@@ -1,4 +1,4 @@
-<?php include "includes/header.php"; ?>
+﻿<?php include "includes/header.php"; ?>
 
 <?php
 $flashStatus = $_GET["status"] ?? "";
@@ -114,29 +114,23 @@ $flashMessage = $_GET["message"] ?? "";
                     </thead>
                     <tbody>
                         <?php while ($category = $adminCategories->fetch_assoc()) { ?>
+                            <?php $formId = "category-form-" . (int)$category["category_id"]; ?>
                             <tr>
                                 <td><?php echo (int)$category["category_id"]; ?></td>
-                                <td colspan="3">
-                                    <div class="admin-category-row">
-                                        <form method="POST" class="row g-2 flex-grow-1">
-                                            <input type="hidden" name="action" value="update_category">
-                                            <input type="hidden" name="category_id" value="<?php echo (int)$category["category_id"]; ?>">
-                                            <div class="col-md-4">
-                                                <input type="text" name="category_name" class="form-control form-control-sm" value="<?php echo htmlspecialchars($category["category_name"], ENT_QUOTES, "UTF-8"); ?>" required>
-                                            </div>
-                                            <div class="col-md-5">
-                                                <input type="text" name="description" class="form-control form-control-sm" value="<?php echo htmlspecialchars($category["description"] ?? "", ENT_QUOTES, "UTF-8"); ?>">
-                                            </div>
-                                            <div class="col-md-3 d-flex gap-2 justify-content-end">
-                                                <button type="submit" class="btn btn-sm btn-outline-dark">Sửa</button>
-                                            </div>
-                                        </form>
-                                        <form method="POST" onsubmit="return confirm('Xóa danh mục này?');">
-                                            <input type="hidden" name="action" value="delete_category">
-                                            <input type="hidden" name="category_id" value="<?php echo (int)$category["category_id"]; ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
-                                        </form>
-                                    </div>
+                                <td>
+                                    <input type="text" name="category_name" class="form-control form-control-sm" value="<?php echo htmlspecialchars($category["category_name"], ENT_QUOTES, "UTF-8"); ?>" form="<?php echo $formId; ?>" required>
+                                </td>
+                                <td>
+                                    <input type="text" name="description" class="form-control form-control-sm" value="<?php echo htmlspecialchars($category["description"] ?? "", ENT_QUOTES, "UTF-8"); ?>" form="<?php echo $formId; ?>">
+                                </td>
+                                <td class="text-end">
+                                    <form method="POST" id="<?php echo $formId; ?>" class="d-inline">
+                                        <input type="hidden" name="category_id" value="<?php echo (int)$category["category_id"]; ?>">
+                                        <div class="d-inline-flex gap-2">
+                                            <button type="submit" name="action" value="update_category" class="btn btn-sm btn-outline-dark">Sửa</button>
+                                            <button type="submit" name="action" value="delete_category" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa danh mục này?');">Xóa</button>
+                                        </div>
+                                    </form>
                                 </td>
                             </tr>
                         <?php } ?>
@@ -255,3 +249,4 @@ $flashMessage = $_GET["message"] ?? "";
 </div>
 
 <?php include "includes/footer.php"; ?>
+
