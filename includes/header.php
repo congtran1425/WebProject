@@ -1,5 +1,19 @@
-﻿
 ﻿<?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["auth_action"] ?? "") === "login") {
+    require_once __DIR__ . "/../controllers/AuthController.php";
+    $authController = new AuthController();
+    $authController->handleLogin();
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["auth_action"] ?? "") === "register") {
+    require_once __DIR__ . "/../controllers/AuthController.php";
+    $authController = new AuthController();
+    $authController->handleRegister();
+}
+
 require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/Category.php";
 require_once __DIR__ . "/weather.php";
@@ -37,6 +51,14 @@ if (is_array($weather) && isset($weather["temperature"])) {
         $weather_icon = map_weather_icon((int)$weather["weathercode"]);
     }
 }
+
+$loginFeedback = $_SESSION["login_feedback"] ?? null;
+unset($_SESSION["login_feedback"]);
+$registerFeedback = $_SESSION["register_feedback"] ?? null;
+unset($_SESSION["register_feedback"]);
+$currentRequest = $_SERVER["REQUEST_URI"] ?? "index.php";
+$shouldOpenLoginModal = !empty($loginFeedback) || (isset($_GET["login"]) && $_GET["login"] === "1");
+$shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]) && $_GET["register"] === "1");
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -56,6 +78,12 @@ if (is_array($weather) && isset($weather["temperature"])) {
     <header class="site-header">
         <div class="topbar border-bottom">
             <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3 py-2">
+                <?php
+                $currentRole = $_SESSION["role"] ?? "";
+                $isLoggedIn = !empty($_SESSION["user_id"]);
+                $canCreateArticle = in_array($currentRole, ["author", "editor", "admin"], true);
+                $isAdmin = $currentRole === "admin";
+                ?>
                 <div class="d-flex align-items-center gap-3">
                     <a class="brand" href="index.php" aria-label="Trang chủ">
                         <span class="brand-vn">VN</span><span class="brand-e">N</span><span class="brand-rest">EWS</span>
@@ -71,13 +99,42 @@ if (is_array($weather) && isset($weather["temperature"])) {
                     <span class="divider"><?php echo htmlspecialchars($today_text, ENT_QUOTES, "UTF-8"); ?></span>
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                    <!-- <a class="top-link" href="#">Mới nhất</a>
-                    <a class="top-link" href="#">Tin theo khu vực</a>
-                    <a class="top-link top-link-brand" href="#"><span class="brand-e small">N</span> International</a> -->
                     <button class="icon-btn" type="button" aria-label="Tìm kiếm"><i class="bi bi-search"></i></button>
-                    <a class="icon-btn text-decoration-none" href="profile.php" aria-label="Trang cá nhân"><i class="bi bi-person-circle"></i></a>
-                    <a class="btn btn-sm btn-outline-dark" href="admin.php">Admin</a>
-                    <a class="btn btn-sm btn-danger" href="create_article.php">Tạo bài viết</a>
+                    <?php if (!$isLoggedIn) { ?>
+                        <a class="btn btn-sm btn-outline-dark" href="#loginModal" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</a>
+                    <?php } else { ?>
+                        <?php
+                        $avatarPath = trim((string)($_SESSION["avatar"] ?? ""));
+                        $displayName = trim((string)($_SESSION["full_name"] ?? ""));
+                        if ($displayName === "") {
+                            $displayName = trim((string)($_SESSION["username"] ?? ""));
+                        }
+                        $initial = $displayName !== "" ? mb_strtoupper(mb_substr($displayName, 0, 1, "UTF-8"), "UTF-8") : "U";
+                        ?>
+                        <div class="dropdown">
+                            <button class="user-avatar-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Tài khoản">
+                                <?php if ($avatarPath !== "") { ?>
+                                    <img src="<?php echo htmlspecialchars($avatarPath, ENT_QUOTES, "UTF-8"); ?>" alt="Avatar">
+                                <?php } else { ?>
+                                    <span class="avatar-initial"><?php echo htmlspecialchars($initial, ENT_QUOTES, "UTF-8"); ?></span>
+                                <?php } ?>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                <li class="dropdown-header"><?php echo htmlspecialchars($displayName !== "" ? $displayName : "Tài khoản", ENT_QUOTES, "UTF-8"); ?></li>
+                                <li><a class="dropdown-item" href="profile.php">Thông tin cá nhân</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item text-danger" href="logout.php">Đăng xuất</a></li>
+                            </ul>
+                        </div>
+                        <?php if ($canCreateArticle) { ?>
+                            <a class="btn btn-sm btn-danger" href="create_article.php">Tạo bài viết</a>
+                        <?php } ?>
+                        <?php if ($isAdmin) { ?>
+                            <a class="btn btn-sm btn-outline-dark" href="admin.php">Admin</a>
+                        <?php } ?>
+                    <?php } ?>
                 </div>
             </div>
         </div>
@@ -94,5 +151,115 @@ if (is_array($weather) && isset($weather["temperature"])) {
             </div>
         </div>
     </header>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-body p-4">
+                    <div class="login-header mb-4">
+                        <div class="login-subtitle text-uppercase">Đăng nhập</div>
+                        <h1 class="login-title mb-2">Chào mừng quay lại</h1>
+                        <p class="text-muted mb-0">Đăng nhập để quản lý bài viết và hồ sơ cá nhân.</p>
+                    </div>
+
+                    <?php if (!empty($loginFeedback)) { ?>
+                        <div class="alert alert-danger" role="alert">
+                            <?php echo htmlspecialchars($loginFeedback["message"] ?? "Đăng nhập không thành công.", ENT_QUOTES, "UTF-8"); ?>
+                        </div>
+                    <?php } ?>
+
+                    <form method="post" action="<?php echo htmlspecialchars($currentRequest, ENT_QUOTES, "UTF-8"); ?>">
+                        <input type="hidden" name="auth_action" value="login">
+                        <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($currentRequest, ENT_QUOTES, "UTF-8"); ?>">
+                        <input type="hidden" name="modal" value="1">
+                        <div class="mb-3">
+                            <label class="form-label" for="login-email-modal">Email</label>
+                            <input class="form-control" id="login-email-modal" type="email" name="email" placeholder="name@example.com" value="<?php echo htmlspecialchars($loginFeedback["email"] ?? "", ENT_QUOTES, "UTF-8"); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="login-password-modal">Mật khẩu</label>
+                            <input class="form-control" id="login-password-modal" type="password" name="password" placeholder="••••••••" required>
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-danger" type="submit">Đăng nhập</button>
+                        </div>
+                        <div class="text-muted small mt-3 text-center">
+                            Bạn chưa có tài khoản? <a href="#registerModal" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">Đăng ký ngay</a>.
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-body p-4">
+                    <div class="login-header mb-4">
+                        <div class="login-subtitle text-uppercase">Đăng ký</div>
+                        <h1 class="login-title mb-2">Tạo tài khoản</h1>
+                        <p class="text-muted mb-0">Tài khoản mới sẽ có quyền Reader mặc định.</p>
+                    </div>
+
+                    <?php if (!empty($registerFeedback)) { ?>
+                        <div class="alert alert-danger" role="alert">
+                            <?php echo htmlspecialchars($registerFeedback["message"] ?? "Đăng ký không thành công.", ENT_QUOTES, "UTF-8"); ?>
+                        </div>
+                    <?php } ?>
+
+                    <form method="post" action="<?php echo htmlspecialchars($currentRequest, ENT_QUOTES, "UTF-8"); ?>">
+                        <input type="hidden" name="auth_action" value="register">
+                        <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($currentRequest, ENT_QUOTES, "UTF-8"); ?>">
+                        <input type="hidden" name="modal" value="1">
+                        <div class="mb-3">
+                            <label class="form-label" for="register-username-modal">Tên đăng nhập</label>
+                            <input class="form-control" id="register-username-modal" type="text" name="username" placeholder="tennguoiddung" value="<?php echo htmlspecialchars($registerFeedback["username"] ?? "", ENT_QUOTES, "UTF-8"); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="register-email-modal">Email</label>
+                            <input class="form-control" id="register-email-modal" type="email" name="email" placeholder="name@example.com" value="<?php echo htmlspecialchars($registerFeedback["email"] ?? "", ENT_QUOTES, "UTF-8"); ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="register-password-modal">Mật khẩu</label>
+                            <input class="form-control" id="register-password-modal" type="password" name="password" placeholder="Tối thiểu 6 ký tự" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="register-confirm-modal">Xác nhận mật khẩu</label>
+                            <input class="form-control" id="register-confirm-modal" type="password" name="confirm_password" placeholder="Nhập lại mật khẩu">
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-danger" type="submit">Đăng ký</button>
+                        </div>
+                        <div class="text-muted small mt-3 text-center">
+                            Bạn đã có tài khoản? <a href="#loginModal" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">Đăng nhập ngay</a>.
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        window.addEventListener("load", function () {
+            var shouldOpen = <?php echo $shouldOpenLoginModal ? "true" : "false"; ?>;
+            if (!window.bootstrap) {
+                return;
+            }
+            if (shouldOpen) {
+                var modalEl = document.getElementById("loginModal");
+                if (modalEl) {
+                    var modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                }
+            }
+            var shouldOpenRegister = <?php echo $shouldOpenRegisterModal ? "true" : "false"; ?>;
+            if (shouldOpenRegister) {
+                var registerEl = document.getElementById("registerModal");
+                if (registerEl) {
+                    var registerModal = new bootstrap.Modal(registerEl);
+                    registerModal.show();
+                }
+            }
+        });
+    </script>
 
     <main class="container mt-4">

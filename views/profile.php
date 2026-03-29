@@ -55,7 +55,7 @@ $genderMap = [
                         </div>
                         <div>
                             <div class="profile-overline">Trang cá nhân</div>
-                            <h1 class="profile-name mb-2"><?php echo htmlspecialchars($displayName, ENT_QUOTES, "UTF-8"); ?></h1>
+                            <h1 class="profile-name mb-2"><?php echo htmlspecialchars($profile["full_name"] ?? "", ENT_QUOTES, "UTF-8"); ?></h1>
                             <div class="d-flex flex-wrap gap-2 mb-3">
                                 <?php if (!empty($profile["role"])) { ?>
                                     <span class="badge rounded-pill text-bg-dark"><?php echo htmlspecialchars($profile["role"], ENT_QUOTES, "UTF-8"); ?></span>
@@ -124,12 +124,12 @@ $genderMap = [
 
                             <div class="col-md-6">
                                 <label class="form-label" for="profile-username">Tên đăng nhập</label>
-                                <input class="form-control" id="profile-username" type="text" name="username" value="<?php echo htmlspecialchars($profile["username"] ?? "", ENT_QUOTES, "UTF-8"); ?>" required>
+                                <input class="form-control" id="profile-username" type="text" value="<?php echo htmlspecialchars($profile["username"] ?? "", ENT_QUOTES, "UTF-8"); ?>" readonly>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label" for="profile-email">Email</label>
-                                <input class="form-control" id="profile-email" type="email" name="email" value="<?php echo htmlspecialchars($profile["email"] ?? "", ENT_QUOTES, "UTF-8"); ?>" required>
+                                <input class="form-control" id="profile-email" type="email" value="<?php echo htmlspecialchars($profile["email"] ?? "", ENT_QUOTES, "UTF-8"); ?>" readonly>
                             </div>
 
                             <div class="col-md-6">

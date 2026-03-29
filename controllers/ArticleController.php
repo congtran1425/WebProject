@@ -22,6 +22,16 @@ class ArticleController
 
     public function create()
     {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        $role = $_SESSION["role"] ?? "";
+        $userId = (int)($_SESSION["user_id"] ?? 0);
+        if ($userId <= 0 || !in_array($role, ["author", "editor", "admin"], true)) {
+            http_response_code(403);
+            exit("Bạn không có quyền tạo bài viết.");
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -35,7 +45,7 @@ class ArticleController
                 $thumbnail_path = $this->handleThumbnailUpload($_FILES["thumbnail"]);
             }
 
-            $this->article->createArticle($title, $summary, $content, $category, $thumbnail_path);
+            $this->article->createArticle($title, $summary, $content, $category, $userId, $thumbnail_path);
 
             header("Location: index.php");
         }
@@ -225,6 +235,6 @@ class ArticleController
             return (int)$_SESSION["user_id"];
         }
 
-        return $this->comment->getFallbackUserId();
+        return 0;
     }
 }

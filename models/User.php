@@ -28,7 +28,7 @@ abstract class User {
 
         $result = $stmt->get_result()->fetch_assoc();
 
-        if ($result && password_verify($password, $result['password'])) {
+        if ($result && password_verify($password, $result['password_hash'])) {
             return $result;
         }
 
@@ -53,7 +53,7 @@ abstract class User {
 
         $hash = password_hash($newPassword, PASSWORD_BCRYPT);
 
-        $sql = "UPDATE user SET password=? WHERE user_id=?";
+        $sql = "UPDATE user SET password_hash=? WHERE user_id=?";
         $stmt = $this->conn->prepare($sql);
 
         $stmt->bind_param("si", $hash, $userId);

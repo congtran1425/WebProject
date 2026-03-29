@@ -45,10 +45,10 @@ class Article
         return $stmt->execute();
     }
 
-    public function createArticle($title, $summary, $content, $categoryId, $thumbnailPath = null)
+    public function createArticle($title, $summary, $content, $categoryId, $userId, $thumbnailPath = null)
     {
         $sql = "INSERT INTO article (title, summary, content, thumbnail, category_id, user_id, status)
-            VALUES (?, ?, ?, ?, ?, 1, 'published')";
+            VALUES (?, ?, ?, ?, ?, ?, 'pending')";
 
         $stmt = $this->conn->prepare($sql);
 
@@ -56,7 +56,7 @@ class Article
             die("Prepare failed: " . $this->conn->error);
         }
 
-        $stmt->bind_param("ssssi", $title, $summary, $content, $thumbnailPath, $categoryId);
+        $stmt->bind_param("ssssii", $title, $summary, $content, $thumbnailPath, $categoryId, $userId);
 
         if (!$stmt->execute()) {
             die("Execute failed: " . $stmt->error);
@@ -69,6 +69,7 @@ class Article
         $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
+            WHERE a.status = 'published'
             ORDER BY created_at DESC";
 
         return $this->conn->query($sql);
@@ -79,7 +80,7 @@ class Article
         $sql = "SELECT a.*, c.category_name
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            WHERE a.category_id=?
+            WHERE a.category_id=? AND a.status = 'published'
             ORDER BY created_at DESC";
 
         $stmt = $this->conn->prepare($sql);
@@ -106,10 +107,11 @@ class Article
     }
     public function getArticleById($id)
     {
-        $sql = "SELECT a.*, c.category_name
+        $sql = "SELECT a.*, c.category_name, u.username, u.full_name, u.avatar
             FROM article a
             JOIN category c ON a.category_id = c.category_id
-            WHERE article_id=?";
+            JOIN user u ON a.user_id = u.user_id
+            WHERE a.article_id=?";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $id);
