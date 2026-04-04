@@ -7,6 +7,6 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 require_once "controllers/ArticleController.php";
 
 $controller = new ArticleController();
-$controller->create();
+$createFeedback = $controller->create();
 
 include "views/article_form.php";

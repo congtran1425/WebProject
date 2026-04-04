@@ -34,21 +34,43 @@ class ArticleController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-            $title = $_POST['title'];
-            $summary = $_POST['summary'];
-            $content = $_POST['content'];
-            $category = $_POST['category'];
-            $thumbnail_path = null;
-
-            if (isset($_FILES["thumbnail"]) && $_FILES["thumbnail"]["error"] === UPLOAD_ERR_OK) {
-                $thumbnail_path = $this->handleThumbnailUpload($_FILES["thumbnail"]);
+            $result = $this->createFromRequest($_POST, $_FILES, $userId);
+            if (!empty($result["success"])) {
+                header("Location: index.php");
+                exit;
             }
 
-            $this->article->createArticle($title, $summary, $content, $category, $userId, $thumbnail_path);
-
-            header("Location: index.php");
+            return $result;
         }
+
+        return null;
+    }
+
+    public function createFromRequest(array $data, array $files, $userId)
+    {
+        $title = trim((string)($data['title'] ?? ''));
+        $summary = trim((string)($data['summary'] ?? ''));
+        $content = trim((string)($data['content'] ?? ''));
+        $category = (int)($data['category'] ?? 0);
+
+        if ($title === '' || $content === '' || $category <= 0) {
+            return [
+                "success" => false,
+                "message" => "Vui lòng nhập đầy đủ tiêu đề, nội dung và danh mục.",
+            ];
+        }
+
+        $thumbnail_path = null;
+        if (isset($files["thumbnail"]) && $files["thumbnail"]["error"] === UPLOAD_ERR_OK) {
+            $thumbnail_path = $this->handleThumbnailUpload($files["thumbnail"]);
+        }
+
+        $saved = $this->article->createArticle($title, $summary, $content, $category, (int)$userId, $thumbnail_path);
+
+        return [
+            "success" => (bool)$saved,
+            "message" => $saved ? "Đã gửi bài viết để duyệt." : "Không thể tạo bài viết.",
+        ];
     }
 
     public function index()
@@ -113,14 +135,14 @@ class ArticleController
         if ($content === "") {
             return [
                 "success" => false,
-                "message" => "Vui lÃ²ng nháº­p ná»™i dung bÃ¬nh luáº­n.",
+                "message" => "Vui lòng nhập nội dung bình luận.",
             ];
         }
 
         if ($parentCommentId > 0 && !$this->comment->supportsReplies()) {
             return [
                 "success" => false,
-                "message" => "CÆ¡ sá»Ÿ dá»¯ liá»‡u chÆ°a há»— trá»£ tráº£ lá»i bÃ¬nh luáº­n.",
+                "message" => "Cơ sở dữ liệu chưa hỗ trợ trả lời bình luận.",
             ];
         }
 
@@ -128,7 +150,7 @@ class ArticleController
         if ($userId <= 0) {
             return [
                 "success" => false,
-                "message" => "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n Ä‘á»ƒ gá»­i bÃ¬nh luáº­n.",
+                "message" => "Không tìm thấy tài khoản để gửi bình luận.",
             ];
         }
 
@@ -136,13 +158,13 @@ class ArticleController
         if (!$saved) {
             return [
                 "success" => false,
-                "message" => "KhÃ´ng thá»ƒ lÆ°u bÃ¬nh luáº­n. Vui lÃ²ng thá»­ láº¡i.",
+                "message" => "Không thể lưu bình luận. Vui lòng thử lại.",
             ];
         }
 
         return [
             "success" => true,
-            "message" => $parentCommentId > 0 ? "ÄÃ£ gá»­i tráº£ lá»i bÃ¬nh luáº­n." : "ÄÃ£ gá»­i bÃ¬nh luáº­n.",
+            "message" => $parentCommentId > 0 ? "Đã gửi trả lời bình luận." : "Đã gửi bình luận.",
         ];
     }
 

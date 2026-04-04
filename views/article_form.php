@@ -7,7 +7,15 @@
                 <h2 class="h4 mb-3">Đăng bài viết</h2>
                 <p class="text-muted mb-4">Điền đầy đủ thông tin để xuất bản bài viết mới.</p>
 
-                <form method="POST" enctype="multipart/form-data" class="row g-3">
+                <div id="article-alert">
+                    <?php if (!empty($createFeedback)) { ?>
+                        <div class="alert <?php echo !empty($createFeedback["success"]) ? "alert-success" : "alert-danger"; ?>" role="alert">
+                            <?php echo htmlspecialchars($createFeedback["message"] ?? "Không thể tạo bài viết.", ENT_QUOTES, "UTF-8"); ?>
+                        </div>
+                    <?php } ?>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" class="row g-3" id="article-form">
                     <div class="col-12">
                         <label class="form-label">Tiêu đề</label>
                         <input type="text" name="title" class="form-control" required>
@@ -60,6 +68,8 @@
 <script>
 const fileInput = document.querySelector('input[name="thumbnail"]');
 const preview = document.querySelector('.thumb-preview');
+const form = document.getElementById('article-form');
+const alertBox = document.getElementById('article-alert');
 
 if (fileInput && preview) {
     fileInput.addEventListener('change', (event) => {
@@ -85,6 +95,51 @@ if (fileInput && preview) {
             preview.style.height = '220px';
         };
         reader.readAsDataURL(file);
+    });
+}
+
+if (form) {
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+        }
+
+        const formData = new FormData(form);
+
+        fetch('api/articles.php', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (!data || !data.success) {
+                    if (alertBox) {
+                        alertBox.innerHTML = `<div class="alert alert-danger" role="alert">${data && data.message ? data.message : 'Không thể tạo bài viết.'}</div>`;
+                    }
+                    return;
+                }
+
+                if (alertBox) {
+                    alertBox.innerHTML = `<div class="alert alert-success" role="alert">${data.message || 'Đã gửi bài viết để duyệt.'}</div>`;
+                }
+
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                }
+            })
+            .catch(() => {
+                if (alertBox) {
+                    alertBox.innerHTML = '<div class="alert alert-danger" role="alert">Không thể kết nối máy chủ.</div>';
+                }
+            })
+            .finally(() => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
+            });
     });
 }
 </script>
