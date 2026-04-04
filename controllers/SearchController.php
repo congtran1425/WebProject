@@ -19,6 +19,13 @@ class SearchController
 
     public function index()
     {
+        $data = $this->getSearchData();
+        extract($data);
+        include __DIR__ . "/../views/search_result.php";
+    }
+
+    public function getSearchData()
+    {
         $categoryResult = $this->categoryModel->getAllCategories();
         $categories = [];
         if ($categoryResult) {
@@ -28,7 +35,7 @@ class SearchController
         }
 
         $rawKeyword = $_GET["q"] ?? "";
-        $keyword = trim(preg_replace("/\\s+/", " ", (string)$rawKeyword));
+        $keyword = trim(preg_replace("/\s+/", " ", (string)$rawKeyword));
         if (mb_strlen($keyword, "UTF-8") > 100) {
             $keyword = mb_substr($keyword, 0, 100, "UTF-8");
         }
@@ -64,7 +71,7 @@ class SearchController
         $minKeywordLen = 2;
         $validationError = null;
         if ($keyword !== "" && mb_strlen($keyword, "UTF-8") < $minKeywordLen) {
-            $validationError = "Từ khóa cần ít nhất " . $minKeywordLen . " ký tự.";
+            $validationError = "Tu khoa can it nhat " . $minKeywordLen . " ky tu.";
         }
 
         $total = 0;
@@ -83,6 +90,19 @@ class SearchController
             $totalPages = 1;
         }
 
-        include __DIR__ . "/../views/search_result.php";
+        return compact(
+            "categories",
+            "keyword",
+            "categoryId",
+            "sort",
+            "range",
+            "page",
+            "perPage",
+            "total",
+            "totalPages",
+            "articles",
+            "shouldSearch",
+            "validationError"
+        );
     }
 }
