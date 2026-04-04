@@ -2,6 +2,7 @@
 
 require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/Profile.php";
+require_once __DIR__ . "/../services/S3Storage.php";
 
 class ProfileController
 {
@@ -206,6 +207,36 @@ class ProfileController
             ];
         }
 
+        $basename = uniqid("avatar_", true);
+        $extension = $allowed[$mime];
+
+        $s3 = new S3Storage();
+        if ($s3->isConfigured()) {
+            $tempDir = sys_get_temp_dir();
+            $tempPath = $tempDir . DIRECTORY_SEPARATOR . $basename . "." . $extension;
+            if (!move_uploaded_file($file["tmp_name"], $tempPath)) {
+                return [
+                    "success" => false,
+                    "message" => "Không thể lưu ảnh đại diện.",
+                ];
+            }
+
+            $url = $s3->uploadImage($tempPath, $mime, "avatars", $extension);
+            @unlink($tempPath);
+
+            if (!$url) {
+                return [
+                    "success" => false,
+                    "message" => "Không thể tải ảnh đại diện lên lưu trữ.",
+                ];
+            }
+
+            return [
+                "success" => true,
+                "path" => $url,
+            ];
+        }
+
         $uploadDir = __DIR__ . "/../assets/avatars";
         if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
             return [
@@ -214,8 +245,7 @@ class ProfileController
             ];
         }
 
-        $basename = uniqid("avatar_", true);
-        $relativePath = "assets/avatars/" . $basename . "." . $allowed[$mime];
+        $relativePath = "assets/avatars/" . $basename . "." . $extension;
         $fullPath = __DIR__ . "/../" . $relativePath;
 
         if (!move_uploaded_file($file["tmp_name"], $fullPath)) {
@@ -252,6 +282,10 @@ class ProfileController
     private function deleteAvatarIfManaged($avatarPath)
     {
         if (empty($avatarPath)) {
+            return;
+        }
+
+        if (preg_match("#^https?://#i", $avatarPath)) {
             return;
         }
 

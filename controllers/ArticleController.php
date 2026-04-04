@@ -3,6 +3,7 @@
 require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/Article.php";
 require_once __DIR__ . "/../models/Comment.php";
+require_once __DIR__ . "/../services/S3Storage.php";
 
 class ArticleController
 {
@@ -179,9 +180,37 @@ class ArticleController
             return null;
         }
 
-        $upload_dir = __DIR__ . "/../assets/uploads/";
         $ext = pathinfo($file["name"], PATHINFO_EXTENSION);
         $basename = uniqid("thumb_", true);
+
+        $s3 = new S3Storage();
+        if ($s3->isConfigured()) {
+            $tempDir = sys_get_temp_dir();
+            $originalPath = $tempDir . DIRECTORY_SEPARATOR . $basename . "." . $ext;
+            if (!move_uploaded_file($file["tmp_name"], $originalPath)) {
+                return null;
+            }
+
+            $uploadPath = $originalPath;
+            if (function_exists("imagecreatefromjpeg")) {
+                $thumbPath = $tempDir . DIRECTORY_SEPARATOR . $basename . "_small." . $ext;
+                if ($this->createThumbnail($originalPath, $thumbPath, 600)) {
+                    $uploadPath = $thumbPath;
+                }
+            }
+
+            $contentType = $file["type"];
+            $url = $s3->uploadImage($uploadPath, $contentType, "uploads", $ext);
+
+            @unlink($originalPath);
+            if (isset($thumbPath)) {
+                @unlink($thumbPath);
+            }
+
+            return $url;
+        }
+
+        $upload_dir = __DIR__ . "/../assets/uploads/";
         $original_path = $upload_dir . $basename . "." . $ext;
 
         if (!move_uploaded_file($file["tmp_name"], $original_path)) {
