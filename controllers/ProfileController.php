@@ -3,6 +3,7 @@
 require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/Profile.php";
 require_once __DIR__ . "/../services/S3Storage.php";
+require_once __DIR__ . "/../includes/auth_cookie.php";
 
 class ProfileController
 {
@@ -116,6 +117,7 @@ class ProfileController
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+        hydrate_session_from_cookie();
     }
 
     private function resolveProfileUserId($requestedUserId = 0)

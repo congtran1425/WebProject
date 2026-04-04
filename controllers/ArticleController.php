@@ -4,6 +4,7 @@ require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/Article.php";
 require_once __DIR__ . "/../models/Comment.php";
 require_once __DIR__ . "/../services/S3Storage.php";
+require_once __DIR__ . "/../includes/auth_cookie.php";
 
 class ArticleController
 {
@@ -26,6 +27,7 @@ class ArticleController
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+        hydrate_session_from_cookie();
 
         $role = $_SESSION["role"] ?? "";
         $userId = (int)($_SESSION["user_id"] ?? 0);
@@ -277,6 +279,7 @@ class ArticleController
 
     private function resolveCommentUserId()
     {
+        hydrate_session_from_cookie();
         if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION["user_id"])) {
             return (int)$_SESSION["user_id"];
         }

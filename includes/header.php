@@ -2,6 +2,8 @@
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
+require_once __DIR__ . "/auth_cookie.php";
+hydrate_session_from_cookie();
 
 $basePath = $basePath ?? "";
 $basePath = $basePath === "" ? "" : rtrim($basePath, "/") . "/";

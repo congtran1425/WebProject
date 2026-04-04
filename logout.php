@@ -3,6 +3,7 @@
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
+require_once __DIR__ . "/includes/auth_cookie.php";
 
 $_SESSION = [];
 
@@ -12,6 +13,7 @@ if (ini_get("session.use_cookies")) {
 }
 
 session_destroy();
+clear_auth_cookie();
 
 $redirect = $_SERVER["HTTP_REFERER"] ?? "/index.php";
 header("Location: " . $redirect);

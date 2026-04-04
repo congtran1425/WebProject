@@ -2,6 +2,7 @@
 
 require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/Admin.php";
+require_once __DIR__ . "/../includes/auth_cookie.php";
 
 class AdminController
 {
@@ -20,6 +21,7 @@ class AdminController
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+        hydrate_session_from_cookie();
         if (($_SESSION["role"] ?? "") !== "admin") {
             header("Location: index.php");
             exit;

@@ -2,6 +2,7 @@
 
 require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../services/AuthService.php";
+require_once __DIR__ . "/../includes/auth_cookie.php";
 
 class AuthController
 {
@@ -55,6 +56,7 @@ class AuthController
         $_SESSION["avatar"] = $user["avatar"] ?? "";
 
         $this->auth->recordLogin((int)$user["user_id"]);
+        set_auth_cookie($user);
 
         $redirect = $_POST["redirect"] ?? $_GET["redirect"] ?? "index.php";
         $safeRedirect = $this->sanitizeRedirect($redirect);
@@ -111,6 +113,7 @@ class AuthController
             $_SESSION["full_name"] = $user["full_name"] ?? "";
             $_SESSION["avatar"] = $user["avatar"] ?? "";
             $this->auth->recordLogin((int)$user["user_id"]);
+            set_auth_cookie($user);
         }
 
         $redirect = $_POST["redirect"] ?? $_GET["redirect"] ?? "index.php";
