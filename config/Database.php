@@ -22,6 +22,10 @@ class Database {
         $this->port = (int)(getenv("DB_PORT") ?: 3306);
         $this->sslCa = getenv("DB_SSL_CA") ?: "";
         $this->sslCaContent = getenv("DB_SSL_CA_CONTENT") ?: "";
+        if ($this->sslCaContent !== "" && strpos($this->sslCaContent, "\\n") !== false) {
+            $this->sslCaContent = str_replace("\\n", "\n", $this->sslCaContent);
+        }
+        $this->sslCaContent = trim($this->sslCaContent);
         $this->sslCert = getenv("DB_SSL_CERT") ?: "";
         $this->sslKey = getenv("DB_SSL_KEY") ?: "";
     }
