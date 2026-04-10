@@ -1,6 +1,7 @@
-﻿<?php
+<?php
 
 require_once __DIR__ . "/../config/Database.php";
+require_once __DIR__ . "/../config/env.php";
 require_once __DIR__ . "/../models/Profile.php";
 
 class ProfileController
@@ -178,6 +179,13 @@ class ProfileController
             return ["success" => true];
         }
 
+        if (!$this->uploadsEnabled()) {
+            return [
+                "success" => false,
+                "message" => "Bản deploy hiện tại đang tạm tắt tải ảnh đại diện.",
+            ];
+        }
+
         if ($file["error"] !== UPLOAD_ERR_OK) {
             return [
                 "success" => false,
@@ -305,5 +313,10 @@ class ProfileController
 
         header("Location: " . $location);
         exit;
+    }
+
+    private function uploadsEnabled()
+    {
+        return env_flag(["APP_ENABLE_UPLOADS"], false);
     }
 }

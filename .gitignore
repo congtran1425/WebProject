@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+
+/vendor/
+/node_modules/
+
+/assets/uploads/*
+!/assets/uploads/.gitkeep
+/assets/avatars/*
+!/assets/avatars/.gitkeep
+
+.DS_Store
+Thumbs.db

@@ -1,6 +1,7 @@
-﻿<?php
+<?php
 
 require_once __DIR__ . "/../config/Database.php";
+require_once __DIR__ . "/../config/env.php";
 require_once __DIR__ . "/../models/Article.php";
 require_once __DIR__ . "/../models/Comment.php";
 
@@ -60,6 +61,17 @@ class ArticleController
             ];
         }
 
+        if (
+            !$this->uploadsEnabled() &&
+            isset($files["thumbnail"]) &&
+            ($files["thumbnail"]["error"] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE
+        ) {
+            return [
+                "success" => false,
+                "message" => "Bản deploy hiện tại đang tạm tắt tải ảnh. Vui lòng đăng bài không kèm ảnh.",
+            ];
+        }
+
         $thumbnail_path = null;
         if (isset($files["thumbnail"]) && $files["thumbnail"]["error"] === UPLOAD_ERR_OK) {
             $thumbnail_path = $this->handleThumbnailUpload($files["thumbnail"]);
@@ -82,6 +94,7 @@ class ArticleController
     {
         return $this->article->getTopViewed($limit);
     }
+
     public function show($id)
     {
         return $this->article->getArticleById($id);
@@ -170,6 +183,10 @@ class ArticleController
 
     private function handleThumbnailUpload($file)
     {
+        if (!$this->uploadsEnabled()) {
+            return null;
+        }
+
         $allowed = ["image/jpeg", "image/png", "image/webp"];
         if (!in_array($file["type"], $allowed, true)) {
             return null;
@@ -254,5 +271,9 @@ class ArticleController
 
         return 0;
     }
-}
 
+    private function uploadsEnabled()
+    {
+        return env_flag(["APP_ENABLE_UPLOADS"], false);
+    }
+}
