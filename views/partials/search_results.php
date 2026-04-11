@@ -33,7 +33,7 @@
                             <?php if (!empty($row["thumbnail"])) { ?>
                                 <img class="article-thumb" src="<?php echo htmlspecialchars($row["thumbnail"], ENT_QUOTES, "UTF-8"); ?>" alt="Thumbnail">
                             <?php } else { ?>
-                                <div class="thumb-placeholder">Chua c� ?nh</div>
+                                <div class="thumb-placeholder">Chưa có ảnh</div>
                             <?php } ?>
                         </div>
                         <h3 class="h6 mb-1">

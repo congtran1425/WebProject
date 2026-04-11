@@ -4,7 +4,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
     header("Content-Type: application/json; charset=UTF-8");
     echo json_encode([
         "success" => false,
-        "message" => "Phuong th?c kh�ng h?p l?.",
+        "message" => "Phương thức không hợp lệ.",
     ]);
     exit;
 }

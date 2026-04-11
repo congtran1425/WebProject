@@ -101,85 +101,127 @@ class AdminController
         return $redirect;
     }
 
+    private function buildResult($success, $successMessage, $errorMessage, array $payload = [])
+    {
+        return [
+            "success" => (bool)$success,
+            "success_message" => $successMessage,
+            "error_message" => $errorMessage,
+            "payload" => $payload,
+        ];
+    }
+
     private function processAction($action, array $data)
     {
         switch ($action) {
             case "update_user_role":
-                $success = $this->admin->updateUserRole((int)($data["user_id"] ?? 0), trim($data["role"] ?? ""));
-                return [
-                    "success" => $success,
-                    "success_message" => "Đã cập nhật quyền người dùng.",
-                    "error_message" => "Không thể cập nhật quyền người dùng.",
-                ];
+                $userId = (int)($data["user_id"] ?? 0);
+                $role = trim((string)($data["role"] ?? ""));
+                $success = $this->admin->updateUserRole($userId, $role);
+                return $this->buildResult(
+                    $success,
+                    "Đã cập nhật quyền người dùng.",
+                    "Không thể cập nhật quyền người dùng.",
+                    [
+                        "user_id" => $userId,
+                        "role" => $role,
+                    ]
+                );
 
             case "update_user_status":
-                $success = $this->admin->updateUserStatus((int)($data["user_id"] ?? 0), trim($data["status"] ?? ""));
-                return [
-                    "success" => $success,
-                    "success_message" => "Đã cập nhật trạng thái người dùng.",
-                    "error_message" => "Không thể cập nhật trạng thái người dùng.",
-                ];
+                $userId = (int)($data["user_id"] ?? 0);
+                $status = trim((string)($data["status"] ?? ""));
+                $success = $this->admin->updateUserStatus($userId, $status);
+                return $this->buildResult(
+                    $success,
+                    "Đã cập nhật trạng thái người dùng.",
+                    "Không thể cập nhật trạng thái người dùng.",
+                    [
+                        "user_id" => $userId,
+                        "status" => $status,
+                    ]
+                );
 
             case "create_category":
                 $success = $this->admin->createCategory(
-                    trim($data["category_name"] ?? ""),
-                    trim($data["description"] ?? "")
+                    trim((string)($data["category_name"] ?? "")),
+                    trim((string)($data["description"] ?? ""))
                 );
-                return [
-                    "success" => $success,
-                    "success_message" => "Đã thêm danh mục.",
-                    "error_message" => "Không thể thêm danh mục.",
-                ];
+                return $this->buildResult(
+                    $success,
+                    "Đã thêm danh mục.",
+                    "Không thể thêm danh mục."
+                );
 
             case "update_category":
+                $categoryId = (int)($data["category_id"] ?? 0);
                 $success = $this->admin->updateCategory(
-                    (int)($data["category_id"] ?? 0),
-                    trim($data["category_name"] ?? ""),
-                    trim($data["description"] ?? "")
+                    $categoryId,
+                    trim((string)($data["category_name"] ?? "")),
+                    trim((string)($data["description"] ?? ""))
                 );
-                return [
-                    "success" => $success,
-                    "success_message" => "Đã cập nhật danh mục.",
-                    "error_message" => "Không thể cập nhật danh mục.",
-                ];
+                return $this->buildResult(
+                    $success,
+                    "Đã cập nhật danh mục.",
+                    "Không thể cập nhật danh mục.",
+                    [
+                        "category_id" => $categoryId,
+                    ]
+                );
 
             case "delete_category":
-                $success = $this->admin->deleteCategory((int)($data["category_id"] ?? 0));
-                return [
-                    "success" => $success,
-                    "success_message" => "Đã xóa danh mục.",
-                    "error_message" => "Không thể xóa danh mục. Có thể danh mục đang được bài viết sử dụng.",
-                ];
+                $categoryId = (int)($data["category_id"] ?? 0);
+                $success = $this->admin->deleteCategory($categoryId);
+                return $this->buildResult(
+                    $success,
+                    "Đã xóa danh mục.",
+                    "Không thể xóa danh mục. Có thể danh mục đang được bài viết sử dụng.",
+                    [
+                        "category_id" => $categoryId,
+                        "deleted" => (bool)$success,
+                    ]
+                );
 
             case "update_article_status":
-                $success = $this->admin->updateArticleStatus(
-                    (int)($data["article_id"] ?? 0),
-                    trim($data["status"] ?? "")
+                $articleId = (int)($data["article_id"] ?? 0);
+                $status = trim((string)($data["status"] ?? ""));
+                $success = $this->admin->updateArticleStatus($articleId, $status);
+                return $this->buildResult(
+                    $success,
+                    "Đã cập nhật trạng thái bài viết.",
+                    "Không thể cập nhật trạng thái bài viết.",
+                    [
+                        "article_id" => $articleId,
+                        "status" => $status,
+                    ]
                 );
-                return [
-                    "success" => $success,
-                    "success_message" => "Đã cập nhật trạng thái bài viết.",
-                    "error_message" => "Không thể cập nhật trạng thái bài viết.",
-                ];
 
             case "delete_article":
-                $success = $this->admin->deleteArticle((int)($data["article_id"] ?? 0));
-                return [
-                    "success" => $success,
-                    "success_message" => "Đã xóa bài viết.",
-                    "error_message" => "Không thể xóa bài viết.",
-                ];
+                $articleId = (int)($data["article_id"] ?? 0);
+                $success = $this->admin->deleteArticle($articleId);
+                return $this->buildResult(
+                    $success,
+                    "Đã xóa bài viết.",
+                    "Không thể xóa bài viết.",
+                    [
+                        "article_id" => $articleId,
+                        "deleted" => (bool)$success,
+                    ]
+                );
 
             case "update_comment_status":
-                $success = $this->admin->updateCommentStatus(
-                    (int)($data["comment_id"] ?? 0),
-                    trim($data["status"] ?? "")
+                $commentId = (int)($data["comment_id"] ?? 0);
+                $status = trim((string)($data["status"] ?? ""));
+                $success = $this->admin->updateCommentStatus($commentId, $status);
+                return $this->buildResult(
+                    $success,
+                    "Đã cập nhật bình luận.",
+                    "Không thể cập nhật bình luận.",
+                    [
+                        "comment_id" => $commentId,
+                        "status" => $status,
+                    ]
                 );
-                return [
-                    "success" => $success,
-                    "success_message" => "Đã cập nhật bình luận.",
-                    "error_message" => "Không thể cập nhật bình luận.",
-                ];
         }
 
         return null;

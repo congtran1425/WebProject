@@ -4,7 +4,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Content-Type: application/json; charset=UTF-8");
     echo json_encode([
         "success" => false,
-        "message" => "Phuong th?c kh�ng h?p l?.",
+        "message" => "Phương thức không hợp lệ.",
     ]);
     exit;
 }
@@ -20,7 +20,7 @@ if ($userId <= 0 || !in_array($role, ["author", "editor", "admin"], true)) {
     header("Content-Type: application/json; charset=UTF-8");
     echo json_encode([
         "success" => false,
-        "message" => "B?n kh�ng c� quy?n dang b�i.",
+        "message" => "Bạn không có quyền đăng bài.",
     ]);
     exit;
 }
@@ -33,6 +33,6 @@ $result = $controller->createFromRequest($_POST, $_FILES, $userId);
 header("Content-Type: application/json; charset=UTF-8");
 echo json_encode([
     "success" => !empty($result["success"]),
-    "message" => $result["message"] ?? "Kh�ng th? t?o b�i vi?t.",
+    "message" => $result["message"] ?? "Không thể tạo bài viết.",
     "redirect" => !empty($result["success"]) ? "index.php" : null,
 ]);

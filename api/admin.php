@@ -4,7 +4,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Content-Type: application/json; charset=UTF-8");
     echo json_encode([
         "success" => false,
-        "message" => "Phuong th?c kh�ng h?p l?.",
+        "message" => "Phương thức không hợp lệ.",
     ]);
     exit;
 }
@@ -18,7 +18,7 @@ if (($_SESSION["role"] ?? "") !== "admin") {
     header("Content-Type: application/json; charset=UTF-8");
     echo json_encode([
         "success" => false,
-        "message" => "Kh�ng c� quy?n truy c?p.",
+        "message" => "Không có quyền truy cập.",
     ]);
     exit;
 }
@@ -33,7 +33,7 @@ if ($result === null) {
     header("Content-Type: application/json; charset=UTF-8");
     echo json_encode([
         "success" => false,
-        "message" => "H�nh d?ng kh�ng h?p l?.",
+        "message" => "Hành động không hợp lệ.",
     ]);
     exit;
 }
@@ -42,4 +42,5 @@ header("Content-Type: application/json; charset=UTF-8");
 echo json_encode([
     "success" => (bool)$result["success"],
     "message" => $result["success"] ? $result["success_message"] : $result["error_message"],
+    "payload" => $result["payload"] ?? new stdClass(),
 ]);
