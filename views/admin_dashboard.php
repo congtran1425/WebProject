@@ -1,4 +1,4 @@
-﻿<?php $basePath = "../"; ?>
+<?php $basePath = "../"; ?>
 <?php include "../includes/header.php"; ?>
 
 <?php $activeTab = "dashboard"; ?>

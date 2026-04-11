@@ -1,4 +1,4 @@
-﻿<?php include "includes/header.php"; ?>
+<?php include "includes/header.php"; ?>
 
 <div class="row justify-content-center">
     <div class="col-lg-8">

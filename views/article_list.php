@@ -1,4 +1,4 @@
-﻿<?php include "includes/header.php"; ?>
+<?php include "includes/header.php"; ?>
 
 <div class="row g-4">
     <div class="col-lg-8">
