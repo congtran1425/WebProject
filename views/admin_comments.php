@@ -1,6 +1,18 @@
 <?php
 $basePath = "../";
 include "../includes/header.php";
+
+$statusLabels = [
+    "visible" => "Hiển thị",
+    "hidden" => "Ẩn",
+    "deleted" => "Đã xóa",
+];
+
+$statusBadgeClasses = [
+    "visible" => "text-bg-success",
+    "hidden" => "text-bg-warning",
+    "deleted" => "text-bg-danger",
+];
 ?>
 
 <?php $activeTab = "comments"; ?>
@@ -27,14 +39,22 @@ include "../includes/header.php";
                 </thead>
                 <tbody>
                     <?php while ($comment = $adminComments->fetch_assoc()) { ?>
-                        <tr>
+                        <?php
+                        $currentStatus = (string)($comment["status"] ?? "visible");
+                        $badgeClass = $statusBadgeClasses[$currentStatus] ?? "text-bg-light";
+                        ?>
+                        <tr data-comment-row="<?php echo (int)$comment["comment_id"]; ?>">
                             <td>
                                 <div class="admin-comment-text"><?php echo htmlspecialchars($comment["content"], ENT_QUOTES, "UTF-8"); ?></div>
                                 <div class="small text-muted"><?php echo !empty($comment["created_at"]) ? date("d/m/Y H:i", strtotime($comment["created_at"])) : ""; ?></div>
                             </td>
                             <td><?php echo htmlspecialchars($comment["username"], ENT_QUOTES, "UTF-8"); ?></td>
                             <td><?php echo htmlspecialchars($comment["article_title"], ENT_QUOTES, "UTF-8"); ?></td>
-                            <td><span class="badge text-bg-light js-status-badge"><?php echo htmlspecialchars($comment["status"], ENT_QUOTES, "UTF-8"); ?></span></td>
+                            <td>
+                                <span class="badge js-status-badge <?php echo $badgeClass; ?>" data-status="<?php echo htmlspecialchars($currentStatus, ENT_QUOTES, "UTF-8"); ?>">
+                                    <?php echo htmlspecialchars($statusLabels[$currentStatus] ?? $currentStatus, ENT_QUOTES, "UTF-8"); ?>
+                                </span>
+                            </td>
                             <td>
                                 <form method="POST" class="d-flex gap-2 justify-content-end" data-admin-form="1">
                                     <input type="hidden" name="action" value="update_comment_status">
@@ -42,8 +62,8 @@ include "../includes/header.php";
                                     <input type="hidden" name="redirect" value="comments.php">
                                     <select name="status" class="form-select form-select-sm">
                                         <?php foreach (["visible", "hidden", "deleted"] as $status) { ?>
-                                            <option value="<?php echo $status; ?>" <?php echo $comment["status"] === $status ? "selected" : ""; ?>>
-                                                <?php echo ucfirst($status); ?>
+                                            <option value="<?php echo $status; ?>" <?php echo $currentStatus === $status ? "selected" : ""; ?>>
+                                                <?php echo htmlspecialchars($statusLabels[$status] ?? ucfirst($status), ENT_QUOTES, "UTF-8"); ?>
                                             </option>
                                         <?php } ?>
                                     </select>
@@ -67,6 +87,18 @@ include "../includes/header.php";
         if (!forms.length) {
             return;
         }
+
+        var statusLabelMap = {
+            visible: "Hiển thị",
+            hidden: "Ẩn",
+            deleted: "Đã xóa"
+        };
+
+        var statusClassMap = {
+            visible: "text-bg-success",
+            hidden: "text-bg-warning",
+            deleted: "text-bg-danger"
+        };
 
         var showAlert = function (message, isSuccess) {
             if (!alertBox) {
@@ -94,20 +126,25 @@ include "../includes/header.php";
                     .then(function (res) { return res.json(); })
                     .then(function (data) {
                         if (!data || !data.success) {
-                            showAlert(data && data.message ? data.message : "Không thể cập nhật.");
+                            showAlert(data && data.message ? data.message : "Không thể cập nhật bình luận.", false);
                             return;
                         }
 
                         var statusField = form.querySelector("select[name=\"status\"]");
                         var row = form.closest("tr");
                         var badge = row ? row.querySelector(".js-status-badge") : null;
-                        if (statusField && badge) {
-                            badge.textContent = statusField.value;
+                        var nextStatus = statusField ? statusField.value : ((data.payload && data.payload.status) || "");
+
+                        if (badge && nextStatus) {
+                            badge.textContent = statusLabelMap[nextStatus] || nextStatus;
+                            badge.setAttribute("data-status", nextStatus);
+                            badge.className = "badge js-status-badge " + (statusClassMap[nextStatus] || "text-bg-light");
                         }
-                        showAlert(data.message || "Đã cập nhật.", true);
+
+                        showAlert(data.message || "Đã cập nhật bình luận.", true);
                     })
                     .catch(function () {
-                        showAlert("Không thể kết nối máy chủ.");
+                        showAlert("Không thể kết nối máy chủ.", false);
                     })
                     .finally(function () {
                         if (submitBtn) {
@@ -118,6 +155,3 @@ include "../includes/header.php";
         });
     })();
 </script>
-
-
-
