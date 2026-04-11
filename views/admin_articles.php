@@ -1,5 +1,7 @@
-<?php $basePath = "../"; ?>
-<?php include "../includes/header.php"; ?>
+<?php
+$basePath = "../";
+include "../includes/header.php";
+?>
 
 <?php $activeTab = "articles"; ?>
 <?php include "../views/admin_nav.php"; ?>

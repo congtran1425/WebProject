@@ -1,4 +1,6 @@
 <?php
+include "includes/header.php";
+
 function profile_display_name(array $profile)
 {
     if (!empty($profile["full_name"])) {
@@ -56,8 +58,6 @@ $genderMap = [
     "other" => "Khác",
 ];
 ?>
-
-<?php include "includes/header.php"; ?>
 
 <div class="profile-page">
     <?php if ($profileFeedback) { ?>

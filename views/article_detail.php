@@ -1,6 +1,7 @@
-<?php include __DIR__ . "/../includes/comment_render.php"; ?>
-
-<?php include "includes/header.php"; ?>
+<?php
+include __DIR__ . "/../includes/comment_render.php";
+include "includes/header.php";
+?>
 
 <div class="article-layout">
     <div class="article-layout-main">

@@ -2,13 +2,13 @@
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
     <div>
-        <h2 class="h6 mb-1 text-uppercase">K?t qu? t�m ki?m</h2>
+        <h2 class="h6 mb-1 text-uppercase">Kết quả tìm kiếm</h2>
         <?php if ($keyword !== "") { ?>
-            <div class="text-muted small">T? kh�a: "<?php echo htmlspecialchars($keyword, ENT_QUOTES, "UTF-8"); ?>" � <?php echo (int)$total; ?> k?t qu?</div>
+            <div class="text-muted small">Từ khóa: "<?php echo htmlspecialchars($keyword, ENT_QUOTES, "UTF-8"); ?>" - <?php echo (int)$total; ?> kết quả</div>
         <?php } elseif ($shouldSearch) { ?>
-            <div class="text-muted small"><?php echo (int)$total; ?> k?t qu?</div>
+            <div class="text-muted small"><?php echo (int)$total; ?> kết quả</div>
         <?php } else { ?>
-            <div class="text-muted small">Nh?p t? kh�a ho?c ch?n b? l?c d? b?t d?u.</div>
+            <div class="text-muted small">Nhập từ khóa hoặc chọn bộ lọc để bắt đầu.</div>
         <?php } ?>
     </div>
 </div>
@@ -19,7 +19,7 @@
     </div>
 <?php } elseif ($shouldSearch && $total === 0) { ?>
     <div class="alert alert-light border" role="alert">
-        Kh�ng t�m th?y k?t qu? ph� h?p. H�y th? t? kh�a kh�c ho?c thay d?i b? l?c.
+        Không tìm thấy kết quả phù hợp. Hãy thử từ khóa khác hoặc thay đổi bộ lọc.
     </div>
 <?php } ?>
 
@@ -33,7 +33,7 @@
                             <?php if (!empty($row["thumbnail"])) { ?>
                                 <img class="article-thumb" src="<?php echo htmlspecialchars($row["thumbnail"], ENT_QUOTES, "UTF-8"); ?>" alt="Thumbnail">
                             <?php } else { ?>
-                                <div class="thumb-placeholder">Chua c� ?nh</div>
+                                <div class="thumb-placeholder">Chua c� ?nh</div>
                             <?php } ?>
                         </div>
                         <h3 class="h6 mb-1">
