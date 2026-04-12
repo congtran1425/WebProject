@@ -1,4 +1,12 @@
 <?php
+if ($profileFeedback && !empty($profileFeedback["message"])) {
+    $toastMessages = $toastMessages ?? [];
+    $toastMessages[] = [
+        "message" => (string)$profileFeedback["message"],
+        "type" => !empty($profileFeedback["success"]) ? "success" : "error",
+    ];
+}
+
 function profile_display_name(array $profile)
 {
     if (!empty($profile["full_name"])) {
@@ -60,12 +68,6 @@ $genderMap = [
 <?php include "includes/header.php"; ?>
 
 <div class="profile-page">
-    <?php if ($profileFeedback) { ?>
-        <div class="alert <?php echo !empty($profileFeedback["success"]) ? "alert-success" : "alert-danger"; ?>" role="alert">
-            <?php echo htmlspecialchars($profileFeedback["message"], ENT_QUOTES, "UTF-8"); ?>
-        </div>
-    <?php } ?>
-
     <?php if ($usesFallbackUser && $canEdit) { ?>
         <div class="alert alert-warning" role="alert">
             Dự án hiện chưa có luồng đăng nhập hoàn chỉnh, nên trang cá nhân đang hiển thị người dùng đầu tiên trong hệ thống để bạn có thể thử tính năng cập nhật hồ sơ.

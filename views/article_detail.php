@@ -1,6 +1,14 @@
-<?php include __DIR__ . "/../includes/comment_render.php"; ?>
-
-<?php include "includes/header.php"; ?>
+<?php
+if (!empty($comment_feedback["message"])) {
+    $toastMessages = $toastMessages ?? [];
+    $toastMessages[] = [
+        "message" => (string)$comment_feedback["message"],
+        "type" => !empty($comment_feedback["success"]) ? "success" : "error",
+    ];
+}
+include __DIR__ . "/../includes/comment_render.php";
+include "includes/header.php";
+?>
 
 <div class="article-layout">
     <div class="article-layout-main">
@@ -65,14 +73,6 @@
                     <span class="comment-count" id="comment-count"><?php echo (int)$comments["count"]; ?></span>
                 </div>
 
-                <div id="comment-alert">
-<?php if (!empty($comment_feedback)) { ?>
-                    <div class="alert <?php echo !empty($comment_feedback["success"]) ? "alert-success" : "alert-danger"; ?> mb-4" role="alert">
-                        <?php echo htmlspecialchars($comment_feedback["message"], ENT_QUOTES, "UTF-8"); ?>
-                    </div>
-                <?php } ?>
-</div>
-
                 <form method="post" action="article_detail.php?id=<?php echo (int)$article["article_id"]; ?>#comments" class="comment-form" data-comment-form="1" data-auth="<?php echo !empty($_SESSION["user_id"]) ? "1" : "0"; ?>">
                     <input type="hidden" name="comment_action" value="create">
                     <label class="form-label" for="comment-content">Nội dung bình luận</label>
@@ -132,8 +132,8 @@
 
 <script>
     (function () {
-        var forms = document.querySelectorAll("form[data-comment-form=\"1\"]");
-        if (!forms.length) {
+        var commentSection = document.getElementById("comments");
+        if (!commentSection) {
             return;
         }
 
@@ -148,93 +148,94 @@
             }
         }
 
-        var alertBox = document.getElementById("comment-alert");
         var countEl = document.getElementById("comment-count");
         var threadEl = document.getElementById("comment-thread");
 
         var showAlert = function (message, isSuccess) {
-            if (!alertBox) {
+            if (!window.appToast) {
                 return;
             }
-            alertBox.innerHTML = "<div class=\"alert " + (isSuccess ? "alert-success" : "alert-danger") + " mb-4\" role=\"alert\">" +
-                String(message || "Có lỗi xảy ra.") +
-                "</div>";
+            window.appToast.show(String(message || "Có lỗi xảy ra."), isSuccess ? "success" : "error");
         };
 
-        forms.forEach(function (form) {
-            form.addEventListener("submit", function (event) {
-                var isAuthed = form.getAttribute("data-auth") === "1";
-                if (!isAuthed) {
-                    event.preventDefault();
+        commentSection.addEventListener("submit", function (event) {
+            var form = event.target.closest("form[data-comment-form=\"1\"]");
+            if (!form) {
+                return;
+            }
 
-                    if (textarea && form.classList.contains("comment-form")) {
-                        localStorage.setItem(storageKey, textarea.value);
-                    }
-
-                    if (window.bootstrap) {
-                        var modalEl = document.getElementById("loginModal");
-                        if (modalEl) {
-                            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                            modal.show();
-                            return;
-                        }
-                    }
-
-                    window.location.href = "#loginModal";
-                    return;
-                }
-
+            var isAuthed = form.getAttribute("data-auth") === "1";
+            if (!isAuthed) {
                 event.preventDefault();
 
-                var submitBtn = form.querySelector("button[type=\"submit\"]");
-                if (submitBtn) {
-                    submitBtn.disabled = true;
+                if (textarea && form.classList.contains("comment-form")) {
+                    localStorage.setItem(storageKey, textarea.value);
                 }
 
-                var formData = new FormData(form);
-                formData.append("article_id", String(articleId));
+                if (window.bootstrap) {
+                    var modalEl = document.getElementById("loginModal");
+                    if (modalEl) {
+                        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.show();
+                        return;
+                    }
+                }
 
-                fetch("api/comments.php", {
-                    method: "POST",
-                    body: formData
+                window.location.href = "#loginModal";
+                return;
+            }
+
+            event.preventDefault();
+
+            var submitBtn = form.querySelector("button[type=\"submit\"]");
+            if (submitBtn) {
+                submitBtn.disabled = true;
+            }
+
+            var formData = new FormData(form);
+            formData.append("article_id", String(articleId));
+
+            fetch("api/comments.php", {
+                method: "POST",
+                body: formData
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (!data || !data.success) {
+                        showAlert(data && data.message ? data.message : "Không thể gửi bình luận.");
+                        return;
+                    }
+
+                    if (countEl && typeof data.count === "number") {
+                        countEl.textContent = String(data.count);
+                    }
+
+                    if (threadEl && typeof data.html === "string") {
+                        threadEl.innerHTML = data.html;
+                    }
+
+                    var contentField = form.querySelector("textarea[name=\"content\"]");
+                    if (contentField) {
+                        contentField.value = "";
+                    }
+
+                    if (form.classList.contains("reply-form")) {
+                        var details = form.closest("details");
+                        if (details) {
+                            details.removeAttribute("open");
+                        }
+                    }
+
+                    showAlert(data.message || "Đã gửi bình luận.", true);
                 })
-                    .then(function (res) { return res.json(); })
-                    .then(function (data) {
-                        if (!data || !data.success) {
-                            showAlert(data && data.message ? data.message : "Không thể gửi bình luận.");
-                            return;
-                        }
-
-                        if (countEl && typeof data.count === "number") {
-                            countEl.textContent = String(data.count);
-                        }
-                        if (threadEl && typeof data.html === "string") {
-                            threadEl.innerHTML = data.html;
-                        }
-
-                        var contentField = form.querySelector("textarea[name=\"content\"]");
-                        if (contentField) {
-                            contentField.value = "";
-                        }
-
-                        if (form.classList.contains("reply-form")) {
-                            var details = form.closest("details");
-                            if (details) {
-                                details.removeAttribute("open");
-                            }
-                        }
-
-                        showAlert(data.message || "Đã gửi bình luận.", true);
-                    })
-                    .catch(function () {
-                        showAlert("Không thể kết nối máy chủ.");
-                    })
-                    .finally(function () {
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                        }
-                    });
-            });
+                .catch(function () {
+                    showAlert("Không thể kết nối máy chủ.");
+                })
+                .finally(function () {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                    }
+                });
         });
 
         var mainForm = document.querySelector(".comment-form");

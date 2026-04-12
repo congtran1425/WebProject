@@ -53,13 +53,13 @@ class Article
         $stmt = $this->conn->prepare($sql);
 
         if (!$stmt) {
-            die("Prepare failed: " . $this->conn->error);
+            return false;
         }
 
         $stmt->bind_param("ssssii", $title, $summary, $content, $thumbnailPath, $categoryId, $userId);
 
         if (!$stmt->execute()) {
-            die("Execute failed: " . $stmt->error);
+            return false;
         }
 
         return true;

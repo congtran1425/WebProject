@@ -4,7 +4,6 @@
 <?php $activeTab = "users"; ?>
 <?php include "../views/admin_nav.php"; ?>
 <?php include "../views/admin_flash.php"; ?>
-<div id="admin-alert" class="mb-3"></div>
 
 <section class="card border-0 shadow-sm admin-section">
     <div class="card-body">
@@ -75,18 +74,15 @@
 <script>
     (function () {
         var forms = document.querySelectorAll("form[data-admin-form=\"1\"]");
-        var alertBox = document.getElementById("admin-alert");
         if (!forms.length) {
             return;
         }
 
         var showAlert = function (message, isSuccess) {
-            if (!alertBox) {
+            if (!window.appToast) {
                 return;
             }
-            alertBox.innerHTML = "<div class=\"alert " + (isSuccess ? "alert-success" : "alert-danger") + "\" role=\"alert\">" +
-                String(message || "Có lỗi xảy ra.") +
-                "</div>";
+            window.appToast.show(String(message || "Có lỗi xảy ra."), isSuccess ? "success" : "error");
         };
 
         forms.forEach(function (form) {

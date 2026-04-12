@@ -3,6 +3,12 @@
 <?php
 $basePath = $basePath ?? "";
 $basePath = $basePath === "" ? "" : rtrim($basePath, "/") . "/";
+$initialToasts = [];
+if (isset($toastMessages) && is_array($toastMessages)) {
+    $initialToasts = array_values(array_filter($toastMessages, function ($toast) {
+        return is_array($toast) && !empty($toast["message"]);
+    }));
+}
 ?>
 
 <footer class="site-footer mt-5 border-top">
@@ -111,7 +117,90 @@ $basePath = $basePath === "" ? "" : rtrim($basePath, "/") . "/";
     </div>
 </footer>
 
+<div class="toast-stack" id="app-toast-stack" aria-live="polite" aria-atomic="true"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    (function () {
+        var stack = document.getElementById("app-toast-stack");
+        if (!stack) {
+            return;
+        }
+
+        var icons = {
+            success: "bi-check-circle-fill",
+            error: "bi-x-circle-fill",
+            warning: "bi-exclamation-triangle-fill",
+            info: "bi-info-circle-fill"
+        };
+
+        var labels = {
+            success: "Thành công",
+            error: "Lỗi",
+            warning: "Lưu ý",
+            info: "Thông báo"
+        };
+
+        var show = function (message, type, duration) {
+            if (!message) {
+                return;
+            }
+
+            type = type || "info";
+            duration = typeof duration === "number" ? duration : 3200;
+
+            var toast = document.createElement("div");
+            toast.className = "app-toast is-" + type;
+            toast.setAttribute("role", "status");
+
+            var icon = icons[type] || icons.info;
+            var label = labels[type] || labels.info;
+            toast.innerHTML =
+                "<div class=\"app-toast__icon\"><i class=\"bi " + icon + "\"></i></div>" +
+                "<div class=\"app-toast__content\">" +
+                "<div class=\"app-toast__label\">" + label + "</div>" +
+                "<div class=\"app-toast__message\"></div>" +
+                "</div>" +
+                "<button class=\"app-toast__close\" type=\"button\" aria-label=\"Đóng thông báo\">&times;</button>";
+
+            toast.querySelector(".app-toast__message").textContent = String(message);
+            stack.appendChild(toast);
+
+            requestAnimationFrame(function () {
+                toast.classList.add("is-visible");
+            });
+
+            var removeToast = function () {
+                toast.classList.remove("is-visible");
+                window.setTimeout(function () {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 220);
+            };
+
+            var closeBtn = toast.querySelector(".app-toast__close");
+            if (closeBtn) {
+                closeBtn.addEventListener("click", removeToast);
+            }
+
+            window.setTimeout(removeToast, duration);
+        };
+
+        window.appToast = {
+            show: show
+        };
+
+        var initialToasts = <?php echo json_encode($initialToasts, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+        if (Array.isArray(initialToasts)) {
+            initialToasts.forEach(function (toast, index) {
+                window.setTimeout(function () {
+                    show(toast.message || "", toast.type || "info");
+                }, index * 180);
+            });
+        }
+    })();
+</script>
 
 </body>
 

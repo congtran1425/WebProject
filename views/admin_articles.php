@@ -1,10 +1,9 @@
-﻿<?php $basePath = "../"; ?>
+<?php $basePath = "../"; ?>
 <?php include "../includes/header.php"; ?>
 
 <?php $activeTab = "articles"; ?>
 <?php include "../views/admin_nav.php"; ?>
 <?php include "../views/admin_flash.php"; ?>
-<div id="admin-alert" class="mb-3"></div>
 
 <section class="card border-0 shadow-sm admin-section">
     <div class="card-body">
@@ -50,7 +49,7 @@
                                         </select>
                                         <button type="submit" class="btn btn-sm btn-dark">Cập nhật</button>
                                     </form>
-                                    <form method="POST" onsubmit="return confirm('Xóa bài viết này?');">
+                                    <form method="POST" data-admin-form="1">
                                         <input type="hidden" name="action" value="delete_article">
                                         <input type="hidden" name="article_id" value="<?php echo (int)$article["article_id"]; ?>">
                                         <input type="hidden" name="redirect" value="articles.php">
@@ -71,23 +70,26 @@
 <script>
     (function () {
         var forms = document.querySelectorAll("form[data-admin-form=\"1\"]");
-        var alertBox = document.getElementById("admin-alert");
         if (!forms.length) {
             return;
         }
 
         var showAlert = function (message, isSuccess) {
-            if (!alertBox) {
+            if (!window.appToast) {
                 return;
             }
-            alertBox.innerHTML = "<div class=\"alert " + (isSuccess ? "alert-success" : "alert-danger") + "\" role=\"alert\">" +
-                String(message || "Có lỗi xảy ra.") +
-                "</div>";
+            window.appToast.show(String(message || "Có lỗi xảy ra."), isSuccess ? "success" : "error");
         };
 
         forms.forEach(function (form) {
             form.addEventListener("submit", function (event) {
                 event.preventDefault();
+
+                var actionField = form.querySelector("input[name=\"action\"]");
+                var action = actionField ? actionField.value : "";
+                if (action === "delete_article" && !window.confirm("Xóa bài viết này?")) {
+                    return;
+                }
 
                 var submitBtn = form.querySelector("button[type=\"submit\"]");
                 if (submitBtn) {
@@ -106,8 +108,16 @@
                             return;
                         }
 
-                        var statusField = form.querySelector("select[name=\"status\"]");
                         var row = form.closest("tr");
+                        if (action === "delete_article") {
+                            if (row) {
+                                row.remove();
+                            }
+                            showAlert(data.message || "Đã xóa bài viết.", true);
+                            return;
+                        }
+
+                        var statusField = form.querySelector("select[name=\"status\"]");
                         var badge = row ? row.querySelector(".js-status-badge") : null;
                         if (statusField && badge) {
                             badge.textContent = statusField.value;
@@ -126,6 +136,3 @@
         });
     })();
 </script>
-
-
-

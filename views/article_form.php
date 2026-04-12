@@ -1,4 +1,13 @@
-﻿<?php include "includes/header.php"; ?>
+<?php
+if (!empty($createFeedback["message"])) {
+    $toastMessages = $toastMessages ?? [];
+    $toastMessages[] = [
+        "message" => (string)$createFeedback["message"],
+        "type" => !empty($createFeedback["success"]) ? "success" : "error",
+    ];
+}
+include "includes/header.php";
+?>
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
@@ -6,14 +15,6 @@
             <div class="card-body p-4">
                 <h2 class="h4 mb-3">Đăng bài viết</h2>
                 <p class="text-muted mb-4">Điền đầy đủ thông tin để xuất bản bài viết mới.</p>
-
-                <div id="article-alert">
-                    <?php if (!empty($createFeedback)) { ?>
-                        <div class="alert <?php echo !empty($createFeedback["success"]) ? "alert-success" : "alert-danger"; ?>" role="alert">
-                            <?php echo htmlspecialchars($createFeedback["message"] ?? "Không thể tạo bài viết.", ENT_QUOTES, "UTF-8"); ?>
-                        </div>
-                    <?php } ?>
-                </div>
 
                 <form method="POST" enctype="multipart/form-data" class="row g-3" id="article-form">
                     <div class="col-12">
@@ -69,7 +70,6 @@
 const fileInput = document.querySelector('input[name="thumbnail"]');
 const preview = document.querySelector('.thumb-preview');
 const form = document.getElementById('article-form');
-const alertBox = document.getElementById('article-alert');
 
 if (fileInput && preview) {
     fileInput.addEventListener('change', (event) => {
@@ -116,23 +116,25 @@ if (form) {
             .then(res => res.json())
             .then(data => {
                 if (!data || !data.success) {
-                    if (alertBox) {
-                        alertBox.innerHTML = `<div class="alert alert-danger" role="alert">${data && data.message ? data.message : 'Không thể tạo bài viết.'}</div>`;
+                    if (window.appToast) {
+                        window.appToast.show(data && data.message ? data.message : 'Không thể tạo bài viết.', 'error');
                     }
                     return;
                 }
 
-                if (alertBox) {
-                    alertBox.innerHTML = `<div class="alert alert-success" role="alert">${data.message || 'Đã gửi bài viết để duyệt.'}</div>`;
+                if (window.appToast) {
+                    window.appToast.show(data.message || 'Đã gửi bài viết để duyệt.', 'success');
                 }
 
                 if (data.redirect) {
-                    window.location.href = data.redirect;
+                    window.setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 900);
                 }
             })
             .catch(() => {
-                if (alertBox) {
-                    alertBox.innerHTML = '<div class="alert alert-danger" role="alert">Không thể kết nối máy chủ.</div>';
+                if (window.appToast) {
+                    window.appToast.show('Không thể kết nối máy chủ.', 'error');
                 }
             })
             .finally(() => {

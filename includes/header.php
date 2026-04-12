@@ -5,6 +5,30 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 $basePath = $basePath ?? "";
 $basePath = $basePath === "" ? "" : rtrim($basePath, "/") . "/";
+if (!isset($toastMessages) || !is_array($toastMessages)) {
+    $toastMessages = [];
+}
+
+if (!function_exists("enqueue_toast")) {
+    function enqueue_toast(&$toastMessages, $message, $type = "info")
+    {
+        $message = trim((string)$message);
+        if ($message === "") {
+            return;
+        }
+
+        $allowedTypes = ["success", "error", "warning", "info"];
+        if (!in_array($type, $allowedTypes, true)) {
+            $type = "info";
+        }
+
+        $toastMessages[] = [
+            "message" => $message,
+            "type" => $type,
+        ];
+    }
+}
+
 function resolve_asset_path($path, $basePath) {
     $path = trim((string)$path);
     if ($path === "") {
@@ -72,6 +96,12 @@ $loginFeedback = $_SESSION["login_feedback"] ?? null;
 unset($_SESSION["login_feedback"]);
 $registerFeedback = $_SESSION["register_feedback"] ?? null;
 unset($_SESSION["register_feedback"]);
+if (!empty($loginFeedback["message"])) {
+    enqueue_toast($toastMessages, $loginFeedback["message"], !empty($loginFeedback["success"]) ? "success" : "error");
+}
+if (!empty($registerFeedback["message"])) {
+    enqueue_toast($toastMessages, $registerFeedback["message"], !empty($registerFeedback["success"]) ? "success" : "error");
+}
 $currentRequest = $_SERVER["REQUEST_URI"] ?? "index.php";
 $shouldOpenLoginModal = !empty($loginFeedback) || (isset($_GET["login"]) && $_GET["login"] === "1");
 $shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]) && $_GET["register"] === "1");
@@ -186,12 +216,6 @@ $shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]
                         <p class="text-muted mb-0">Đăng nhập để quản lý bài viết và hồ sơ cá nhân.</p>
                     </div>
 
-                    <?php if (!empty($loginFeedback)) { ?>
-                        <div class="alert alert-danger" role="alert">
-                            <?php echo htmlspecialchars($loginFeedback["message"] ?? "Đăng nhập không thành công.", ENT_QUOTES, "UTF-8"); ?>
-                        </div>
-                    <?php } ?>
-
                     <form method="post" action="<?php echo htmlspecialchars($currentRequest, ENT_QUOTES, "UTF-8"); ?>">
                         <input type="hidden" name="auth_action" value="login">
                         <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($currentRequest, ENT_QUOTES, "UTF-8"); ?>">
@@ -224,12 +248,6 @@ $shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]
                         <h1 class="login-title mb-2">Tạo tài khoản</h1>
                         <p class="text-muted mb-0">Tài khoản mới sẽ có quyền Reader mặc định.</p>
                     </div>
-
-                    <?php if (!empty($registerFeedback)) { ?>
-                        <div class="alert alert-danger" role="alert">
-                            <?php echo htmlspecialchars($registerFeedback["message"] ?? "Đăng ký không thành công.", ENT_QUOTES, "UTF-8"); ?>
-                        </div>
-                    <?php } ?>
 
                     <form method="post" action="<?php echo htmlspecialchars($currentRequest, ENT_QUOTES, "UTF-8"); ?>">
                         <input type="hidden" name="auth_action" value="register">

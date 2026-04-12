@@ -60,12 +60,20 @@ class ArticleController
             ];
         }
 
-        $thumbnail_path = null;
-        if (isset($files["thumbnail"]) && $files["thumbnail"]["error"] === UPLOAD_ERR_OK) {
-            $thumbnail_path = $this->handleThumbnailUpload($files["thumbnail"]);
+        $thumbnailPath = null;
+        if (isset($files["thumbnail"])) {
+            $uploadResult = $this->handleThumbnailUpload($files["thumbnail"]);
+            if (empty($uploadResult["success"])) {
+                return [
+                    "success" => false,
+                    "message" => $uploadResult["message"] ?? "Không thể xử lý ảnh đại diện.",
+                ];
+            }
+
+            $thumbnailPath = $uploadResult["path"] ?? null;
         }
 
-        $saved = $this->article->createArticle($title, $summary, $content, $category, (int)$userId, $thumbnail_path);
+        $saved = $this->article->createArticle($title, $summary, $content, $category, (int)$userId, $thumbnailPath);
 
         return [
             "success" => (bool)$saved,
@@ -170,13 +178,34 @@ class ArticleController
 
     private function handleThumbnailUpload($file)
     {
+        $error = (int)($file["error"] ?? UPLOAD_ERR_NO_FILE);
+        if ($error === UPLOAD_ERR_NO_FILE) {
+            return [
+                "success" => true,
+                "path" => null,
+            ];
+        }
+
+        if ($error !== UPLOAD_ERR_OK) {
+            return [
+                "success" => false,
+                "message" => "Tải ảnh đại diện lên không thành công.",
+            ];
+        }
+
         $allowed = ["image/jpeg", "image/png", "image/webp"];
         if (!in_array($file["type"], $allowed, true)) {
-            return null;
+            return [
+                "success" => false,
+                "message" => "Ảnh đại diện phải là JPG, PNG hoặc WEBP.",
+            ];
         }
 
         if ($file["size"] > 2 * 1024 * 1024) {
-            return null;
+            return [
+                "success" => false,
+                "message" => "Ảnh đại diện không được vượt quá 2MB.",
+            ];
         }
 
         $upload_dir = __DIR__ . "/../assets/uploads/";
@@ -185,17 +214,26 @@ class ArticleController
         $original_path = $upload_dir . $basename . "." . $ext;
 
         if (!move_uploaded_file($file["tmp_name"], $original_path)) {
-            return null;
+            return [
+                "success" => false,
+                "message" => "Không thể lưu ảnh đại diện lên máy chủ.",
+            ];
         }
 
         if (!function_exists("imagecreatefromjpeg")) {
-            return "assets/uploads/" . $basename . "." . $ext;
+            return [
+                "success" => true,
+                "path" => "assets/uploads/" . $basename . "." . $ext,
+            ];
         }
 
         $thumb_path = $upload_dir . $basename . "_small." . $ext;
         $this->createThumbnail($original_path, $thumb_path, 600);
 
-        return "assets/uploads/" . $basename . "_small." . $ext;
+        return [
+            "success" => true,
+            "path" => "assets/uploads/" . $basename . "_small." . $ext,
+        ];
     }
 
     private function createThumbnail($source, $dest, $targetWidth)
