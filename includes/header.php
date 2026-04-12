@@ -237,7 +237,7 @@ $shouldOpenRegisterModal = !empty($registerFeedback) || (isset($_GET["register"]
                         <input type="hidden" name="modal" value="1">
                         <div class="mb-3">
                             <label class="form-label" for="register-username-modal">Tên đăng nhập</label>
-                            <input class="form-control" id="register-username-modal" type="text" name="username" placeholder="tennguoiddung" value="<?php echo htmlspecialchars($registerFeedback["username"] ?? "", ENT_QUOTES, "UTF-8"); ?>" required>
+                            <input class="form-control" id="register-username-modal" type="text" name="username" placeholder="Tên Người Dùng" value="<?php echo htmlspecialchars($registerFeedback["username"] ?? "", ENT_QUOTES, "UTF-8"); ?>" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="register-email-modal">Email</label>
